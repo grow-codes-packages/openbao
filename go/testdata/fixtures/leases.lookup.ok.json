@@ -1,0 +1,38 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/leases/lookup",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNzQifQ=="
+    ],
+    "body": {
+      "request_id": "eb13e585-ea4d-6f6c-1a5e-d1f9b00de5f2",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "expire_time": "2026-11-18T21:29:08.301827334Z",
+        "id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX",
+        "issue_time": "2026-11-18T20:29:08.301827204Z",
+        "last_renewal": null,
+        "path": "database/creds/ro-f43633d7",
+        "renewable": true,
+        "ttl": 3599
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/leader",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "ha_enabled": true,
+      "is_self": true,
+      "active_time": "2026-11-18T20:28:33.289648702Z",
+      "leader_address": "http://openbao:8200",
+      "leader_cluster_address": "https://127.0.0.1:8201",
+      "raft_committed_index": 108,
+      "raft_applied_index": 108
+    }
+  }
+}

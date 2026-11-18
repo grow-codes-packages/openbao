@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/pki/sign/sdk-test",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "csr": "not a csr",
+      "common_name": "x.example.test"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "csr contains no data"
+      ]
+    }
+  }
+}

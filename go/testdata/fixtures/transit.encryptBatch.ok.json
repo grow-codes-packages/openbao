@@ -1,0 +1,51 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/encrypt/sdk-f43633d7",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "batch_input": [
+        {
+          "plaintext": "b25l"
+        },
+        {
+          "plaintext": "dHdv",
+          "reference": "r2"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjYifQ=="
+    ],
+    "body": {
+      "request_id": "b6f8fcbd-1b45-4a1c-9603-bb5c6fe47cd9",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "batch_results": [
+          {
+            "ciphertext": "vault:v2:1i9u6AeoYFCMJ48Pm3EsKA3lWNtdi5J10gtNbD5f7A==",
+            "key_version": 2,
+            "reference": ""
+          },
+          {
+            "ciphertext": "vault:v2:xf1fmXbLcCIxa4BJ3UIEypfKyPMuO/N3kT3Sl15Pfg==",
+            "key_version": 2,
+            "reference": "r2"
+          }
+        ]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

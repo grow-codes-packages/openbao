@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/token/create",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "policies": [
+        "sdk-app"
+      ]
+    }
+  },
+  "response": {
+    "status": 403,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "1 error occurred:\n\t* permission denied\n\n"
+      ]
+    }
+  }
+}
