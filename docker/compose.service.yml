@@ -1,0 +1,106 @@
+# OpenBao real-service fixture for the grow-codes-packages/openbao SDK (GRO-1367).
+#
+# - `service` (alias `openbao`): the service under test, image = stack catalog tag, server mode,
+#                      single-node Raft on /openbao/file/data (OpenBao 2.7 removed the
+#                      `file` backend) + static-key auto-unseal, like the platform stack
+#                      template (migration 1792300000802-FixOpenbaoRaftStorage).
+# - `openbao-shamir` : a second, never-initialised instance with the default Shamir seal,
+#                      only for the testing-module `init()` / `unseal()` round trips and
+#                      the 501 -> 503 -> 200 health transitions.
+# - `postgres`       : target of the database secrets engine (catalog tag).
+# - `bootstrap`      : one-shot; inits OpenBao, enables engines/auth methods, writes
+#                      KEY=value lines to /bootstrap/env (named volume `bootstrap`).
+#
+# No host ports are published. Test containers need only
+#   GROW_OPENBAO_URL=http://openbao:8200  and  /bootstrap/env  (volume `bootstrap`, read-only).
+# Everything here is TEST-ONLY material (static unseal key, passwords, JWT key).
+
+x-openbao-common: &openbao-common
+  image: openbao/openbao:2.7.2
+  # The image entrypoint passes `sh` through; we create the Raft dir, then let the
+  # upstream entrypoint chown /openbao/file and drop to the `openbao` user.
+  command:
+    - sh
+    - -c
+    - mkdir -p /openbao/file/data && exec docker-entrypoint.sh server
+  healthcheck:
+    # "Process is serving HTTP": 200 even when uninitialised/sealed/standby, because
+    # initialisation is the bootstrap's job. Readiness for tests = bootstrap completed.
+    test: ["CMD-SHELL", "wget -q -O /dev/null 'http://127.0.0.1:8200/v1/sys/health?uninitcode=200&sealedcode=200&standbyok=true&perfstandbyok=true' || exit 1"]
+    interval: 2s
+    timeout: 3s
+    retries: 30
+    start_period: 2s
+  restart: "no"
+
+services:
+  postgres:
+    image: postgres:18.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres-test-only
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app -h 127.0.0.1"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  service:   # the service under test (harness contract); reachable as `openbao`
+    <<: *openbao-common
+    networks:
+      default:
+        aliases: [openbao]
+    environment:
+      OPENBAO_UNSEAL_SECRET: sdk-test-only-static-unseal-key0   # exactly 32 chars, test only
+      BAO_ADDR: http://127.0.0.1:8200
+      BAO_LOCAL_CONFIG: >-
+        {"storage":{"raft":{"path":"/openbao/file/data","node_id":"openbao","performance_multiplier":1}},
+        "listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],
+        "seal":{"static":{"current_key_id":"stack-unseal-1","current_key":"env://OPENBAO_UNSEAL_SECRET"}},
+        "api_addr":"http://openbao:8200","cluster_addr":"http://127.0.0.1:8201","ui":true}
+    volumes:
+      - openbao-data:/openbao/file
+
+  openbao-shamir:
+    <<: *openbao-common
+    environment:
+      BAO_ADDR: http://127.0.0.1:8200
+      BAO_LOCAL_CONFIG: >-
+        {"storage":{"raft":{"path":"/openbao/file/data","node_id":"openbao-shamir","performance_multiplier":1}},
+        "listener":[{"tcp":{"address":"0.0.0.0:8200","tls_disable":true}}],
+        "api_addr":"http://openbao-shamir:8200","cluster_addr":"http://127.0.0.1:8201","ui":false}
+    volumes:
+      - openbao-shamir-data:/openbao/file
+
+  bootstrap:
+    image: openbao/openbao:2.7.2
+    entrypoint: ["/bin/sh", "/bootstrap-scripts/bootstrap.sh"]
+    user: "0:0"   # image default user is `openbao`; root so it can own the fresh named volume
+    environment:
+      BAO_ADDR: http://openbao:8200
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_DB: app
+      PG_ADMIN_USER: postgres
+      PG_ADMIN_PASSWORD: postgres-test-only
+    volumes:
+      - ./bootstrap:/bootstrap-scripts:ro
+      - bootstrap:/bootstrap
+    depends_on:
+      service:
+        condition: service_healthy
+      openbao-shamir:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  openbao-data:
+  openbao-shamir-data:
+  pgdata:
+  bootstrap:
