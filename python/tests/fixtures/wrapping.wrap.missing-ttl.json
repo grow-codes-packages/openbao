@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/sys/wrapping/wrap",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "x": 1
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "endpoint requires response wrapping to be used"
+      ]
+    }
+  }
+}

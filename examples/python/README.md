@@ -12,6 +12,7 @@ python examples/python/basic.py
 | File | Shows |
 | - | - |
 | `basic.py` | sync client: health, ping, server version, error handling |
+| `openbao_tour.py` | KV, `client.secrets()`, transit, wrapping, AppRole login, database credentials + `LeaseManager`, PKI |
 | `async_basic.py` | async client, cancellation by task |
 | `hooks_and_logging.py` | request hooks, the `grow_openbao` logger, retries and timeouts |
-| `secrets_cache.py` | cached secret reads, typed getters, `load_env`, `watch` (in-memory provider) |
+| `secrets_cache.py` | cached secret reads, typed getters, `load_env`, `watch` (in-memory provider; use `client.secrets()` against a server) |

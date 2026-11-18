@@ -1,0 +1,34 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/secret/data/sdk/allowed/hello",
+    "headers": [
+      "X-Vault-Wrap-TTL: 60s"
+    ],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMzcifQ=="
+    ],
+    "body": {
+      "request_id": "",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": {
+        "token": "<redacted>",
+        "accessor": "<redacted>",
+        "ttl": 60,
+        "creation_time": "2026-11-18T20:29:17.089216587Z",
+        "creation_path": "secret/data/sdk/allowed/hello"
+      },
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

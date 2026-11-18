@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import secrets as _random
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -37,3 +38,9 @@ def env() -> dict[str, str]:
 def client(env: dict[str, str]) -> Iterator[sdk.OpenBaoClient]:
     with core_client(env) as c:
         yield c
+
+
+@pytest.fixture
+def run_id() -> str:
+    """Unique lowercase id per test (names never collide between runs or languages)."""
+    return f"py{os.environ.get('GROW_TEST_RUN_ID', 'local')}{_random.token_hex(4)}".lower()

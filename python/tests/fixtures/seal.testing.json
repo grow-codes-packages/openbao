@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/seal",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": null
+  }
+}

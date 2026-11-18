@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/unseal",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "key": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "type": "shamir",
+      "initialized": true,
+      "sealed": false,
+      "t": 1,
+      "n": 1,
+      "progress": 0,
+      "nonce": "",
+      "recovery_seal": false,
+      "version": "2.7.2",
+      "commit_date": "2026-10-26T20:32:27Z",
+      "migration": false,
+      "cluster_name": "vault-cluster-928e6377",
+      "cluster_id": "7d986b09-ef5f-3e05-9d54-f98c77c4a2ee",
+      "storage_type": "raft"
+    }
+  }
+}

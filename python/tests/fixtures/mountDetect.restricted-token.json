@@ -1,0 +1,47 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/internal/ui/mounts/secret/sdk/allowed/hello",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMzgifQ=="
+    ],
+    "body": {
+      "request_id": "25287ced-8168-acbb-10dc-252a701065c8",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "deprecation_status": "supported",
+        "description": "SDK KV v2",
+        "external_entropy_access": false,
+        "local": false,
+        "options": {
+          "version": "2"
+        },
+        "path": "secret/",
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "kv",
+        "uuid": "fc0785ca-fa35-d906-a00c-4590c93e0af7"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}
