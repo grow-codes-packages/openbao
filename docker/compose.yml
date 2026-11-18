@@ -30,7 +30,7 @@ x-test: &test
   volumes:
     - bootstrap:/bootstrap:ro
   environment:
-    GROW_OPENBAO_URL: ${GROW_OPENBAO_URL:-http://service:8200}
+    GROW_OPENBAO_URL: ${GROW_OPENBAO_URL:-http://openbao:8200}
     GROW_BOOTSTRAP_ENV: /bootstrap/env
     GROW_TEST_RUN_ID: ${GROW_TEST_RUN_ID:-local}
   init: true
