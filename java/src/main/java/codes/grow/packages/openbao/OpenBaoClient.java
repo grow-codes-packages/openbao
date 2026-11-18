@@ -9,43 +9,69 @@ import codes.grow.packages.openbao.core.HealthStatus;
 import codes.grow.packages.openbao.core.Hooks;
 import codes.grow.packages.openbao.core.HttpTransport;
 import codes.grow.packages.openbao.core.Logger;
+import codes.grow.packages.openbao.core.OpenBaoException;
 import codes.grow.packages.openbao.core.RetryPolicy;
 import codes.grow.packages.openbao.core.Secret;
 import codes.grow.packages.openbao.core.TlsOptions;
-import codes.grow.packages.openbao.core.TransportRequest;
-import codes.grow.packages.openbao.core.TransportResponse;
 import codes.grow.packages.openbao.core.UnsupportedException;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Client for OpenBao.
  *
- * <p>Implements SPEC section 2.4. Thread-safe; create one per endpoint and close it when done.
+ * <p>Implements SPEC section 2.4 plus the OpenBao modules: {@link #auth()}, {@link #kv()}, {@link
+ * #transit()}, {@link #database()}, {@link #leases()}, {@link #pki()}, {@link #sys()}, {@link
+ * #wrapping()} and the {@code SecretsProvider} {@link #secrets()}. Thread-safe; create one per
+ * endpoint and close it when done.
  *
  * <pre>{@code
- * try (OpenBaoClient client = OpenBaoClient.fromEnv()) {
- *   HealthStatus health = client.health();
+ * try (OpenBaoClient client = OpenBaoClient.fromEnv()) {   // BAO_ADDR / BAO_TOKEN / GROW_OPENBAO_*
+ *   client.kv().write("app/db", Map.of("password", "s3cret"));
+ *   KvSecret secret = client.kv().read("app/db");
  * }
  * }</pre>
  *
- * <p>Every I/O method has a blocking form and an {@code …Async} form returning {@link
- * CompletableFuture}. This file is owned by the service package (generated once by sdk-kit); add
- * service modules here.
+ * <p>Every I/O method has a blocking form and an {@code ...Async} form returning {@link
+ * CompletableFuture}.
  */
 public final class OpenBaoClient implements AutoCloseable {
   private final OpenBaoConfig config;
   private final HttpTransport transport;
+  private final AtomicReference<Secret> token;
+  private final ClientContext ctx;
+  private final Auth auth;
+  private final Sys sys;
+  private final Wrapping wrapping;
+  private final LeaseManager leases;
+  private final Map<String, KvMount> kvMounts = new ConcurrentHashMap<>();
   private final AtomicBoolean closed = new AtomicBoolean();
   private final List<AutoCloseable> resources = new ArrayList<>();
 
   private OpenBaoClient(OpenBaoConfig config) {
     this.config = config;
-    this.transport = new HttpTransport(config.toTransportConfig());
+    this.token = new AtomicReference<>(config.token().orElse(null));
+    this.transport =
+        new HttpTransport(
+            config.toTransportConfig(
+                () -> {
+                  Secret t = token.get();
+                  return t == null || t.isCleared() ? List.of() : List.of(t.reveal());
+                }));
+    VaultHttp http = new VaultHttp(transport, token::get, config.namespace().orElse(null));
+    this.ctx = new ClientContext(http, config, token);
+    this.auth = new Auth(ctx);
+    this.sys = new Sys(ctx);
+    this.wrapping = new Wrapping(ctx);
+    this.leases = new LeaseManager(ctx);
   }
 
   /**
@@ -61,7 +87,8 @@ public final class OpenBaoClient implements AutoCloseable {
   }
 
   /**
-   * Creates a client from the SDK and vendor environment variables.
+   * Creates a client from the SDK and vendor environment variables ({@code GROW_OPENBAO_*}, {@code
+   * BAO_*}, {@code VAULT_*}).
    *
    * @return a new client
    */
@@ -88,7 +115,7 @@ public final class OpenBaoClient implements AutoCloseable {
   }
 
   /**
-   * Returns the HTTP transport, for service modules built on this client.
+   * Returns the HTTP transport, for modules built on this client.
    *
    * @return the transport
    */
@@ -97,7 +124,34 @@ public final class OpenBaoClient implements AutoCloseable {
   }
 
   /**
-   * Registers a resource (watcher, renewer, batch processor) closed with the client.
+   * Returns the current client token (from the config, a login or {@link #setToken}).
+   *
+   * @return the token, or empty
+   */
+  public Optional<Secret> token() {
+    return Optional.ofNullable(token.get());
+  }
+
+  /**
+   * Replaces the client token.
+   *
+   * @param token the new token, or null to send none
+   */
+  public void setToken(Secret token) {
+    this.token.set(token);
+  }
+
+  /**
+   * Replaces the client token.
+   *
+   * @param token the new token, or null to send none
+   */
+  public void setToken(String token) {
+    setToken(token == null ? null : Secret.of(token));
+  }
+
+  /**
+   * Registers a resource (watcher, renewer, provider) closed with the client.
    *
    * @param resource the resource
    */
@@ -107,14 +161,231 @@ public final class OpenBaoClient implements AutoCloseable {
     }
   }
 
+  private void unregister(AutoCloseable resource) {
+    synchronized (resources) {
+      resources.remove(resource);
+    }
+  }
+
+  // ---- modules ----
+
   /**
-   * Checks liveness ({@code GET /health}). Never throws for an unhealthy or unreachable service.
+   * Logins, token self-service and token renewal.
+   *
+   * @return the auth module
+   */
+  public Auth auth() {
+    return auth;
+  }
+
+  /**
+   * System backend (health, seal status, policies, mounts, auth methods, AppRole admin).
+   *
+   * @return the sys module
+   */
+  public Sys sys() {
+    return sys;
+  }
+
+  /**
+   * Response wrapping.
+   *
+   * @return the wrapping module
+   */
+  public Wrapping wrapping() {
+    return wrapping;
+  }
+
+  /**
+   * Lease renew / revoke / lookup and automatic lease renewal.
+   *
+   * @return the lease manager
+   */
+  public LeaseManager leases() {
+    return leases;
+  }
+
+  /**
+   * The default KV mount ({@link OpenBaoConfig#kvMount()}) with auto-detected version.
+   *
+   * @return the mount
+   */
+  public KvMount kv() {
+    return kv(config.kvMount());
+  }
+
+  /**
+   * A KV mount with auto-detected version; the same instance is returned for the same mount.
+   *
+   * @param mount mount path
+   * @return the mount
+   */
+  public KvMount kv(String mount) {
+    String key = Wire.trimSlashes(mount);
+    return kvMounts.computeIfAbsent(
+        key,
+        k ->
+            new KvMount(
+                ctx, k, config.kvVersion().isPresent() ? config.kvVersion().getAsInt() : null));
+  }
+
+  /**
+   * A KV version 1 mount (no detection).
+   *
+   * @param mount mount path
+   * @return the mount
+   */
+  public KvV1 kvV1(String mount) {
+    return new KvV1(ctx, mount);
+  }
+
+  /**
+   * A KV version 2 mount (no detection).
+   *
+   * @param mount mount path
+   * @return the mount
+   */
+  public KvV2 kvV2(String mount) {
+    return new KvV2(ctx, mount);
+  }
+
+  /**
+   * The transit engine on mount {@code transit}.
+   *
+   * @return the transit module
+   */
+  public Transit transit() {
+    return transit("transit");
+  }
+
+  /**
+   * The transit engine on a mount.
+   *
+   * @param mount mount path
+   * @return the transit module
+   */
+  public Transit transit(String mount) {
+    return new Transit(ctx, mount);
+  }
+
+  /**
+   * The database engine on mount {@code database}.
+   *
+   * @return the database module
+   */
+  public Database database() {
+    return database("database");
+  }
+
+  /**
+   * The database engine on a mount.
+   *
+   * @param mount mount path
+   * @return the database module
+   */
+  public Database database(String mount) {
+    return new Database(ctx, mount);
+  }
+
+  /**
+   * The PKI engine on mount {@code pki}.
+   *
+   * @return the PKI module
+   */
+  public Pki pki() {
+    return pki("pki");
+  }
+
+  /**
+   * The PKI engine on a mount.
+   *
+   * @param mount mount path
+   * @return the PKI module
+   */
+  public Pki pki(String mount) {
+    return new Pki(ctx, mount);
+  }
+
+  /**
+   * {@code SecretsProvider} over the default KV mount. {@link #close()} stops its watchers.
+   *
+   * @return the provider
+   */
+  public OpenBaoSecretsProvider secrets() {
+    return secrets(SecretsOptions.builder().build());
+  }
+
+  /**
+   * {@code SecretsProvider} over a KV mount and base path.
+   *
+   * @param options mount, base path, value field
+   * @return the provider
+   */
+  public OpenBaoSecretsProvider secrets(SecretsOptions options) {
+    OpenBaoSecretsProvider[] holder = new OpenBaoSecretsProvider[1];
+    holder[0] =
+        new OpenBaoSecretsProvider(
+            kv(options.mount == null ? config.kvMount() : options.mount),
+            options,
+            () -> unregister(holder[0]));
+    register(holder[0]);
+    return holder[0];
+  }
+
+  // ---- raw requests ----
+
+  /**
+   * Calls any OpenBao API path ({@code /v1/<path>}) with the client token, namespace, retries and
+   * error mapping. Use it for endpoints this SDK has no method for.
+   *
+   * @param method HTTP method ({@code GET}, {@code POST}, {@code PUT}, {@code DELETE}, {@code LIST}
+   *     is sent as {@code GET ?list=true})
+   * @param path path below {@code /v1/} (each segment is percent-encoded)
+   * @param body JSON body, may be null
+   * @return the decoded envelope
+   */
+  public RawResponse request(String method, String path, Object body) {
+    return HttpTransport.await(requestAsync(method, path, body), "request");
+  }
+
+  /**
+   * Asynchronous {@link #request(String, String, Object)}.
+   *
+   * @param method HTTP method
+   * @param path path below {@code /v1/}
+   * @param body JSON body, may be null
+   * @return a future with the decoded envelope
+   */
+  public CompletableFuture<RawResponse> requestAsync(String method, String path, Object body) {
+    String m = method.toUpperCase(java.util.Locale.ROOT);
+    boolean list = m.equals("LIST");
+    String op = m + " " + Wire.trimSlashes(path);
+    return Wire.async(
+        () -> {
+          VaultHttp.Call c = ctx.http.call(list ? "GET" : m, Wire.encodePath(path), op);
+          if (list) {
+            c.list();
+          }
+          if (body != null) {
+            c.json(body);
+          }
+          return c.send().thenApply(r -> RawResponse.from(r.status(), VaultHttp.body(r)));
+        });
+  }
+
+  // ---- shared surface ----
+
+  /**
+   * Unauthenticated health ({@code GET /v1/sys/health}, answers 200 in every node state). {@code
+   * healthy} is true only for an active, unsealed node; {@code status} is {@code active}, {@code
+   * standby}, {@code perfstandby}, {@code sealed} or {@code uninitialized} ({@code unreachable} on
+   * errors). Never throws except for cancellation and configuration errors.
    *
    * @return the health status
    * @throws CancelledException when interrupted or closed
    */
   public HealthStatus health() {
-    return HealthCheck.check(transport, "/health");
+    return HttpTransport.await(healthAsync(), "health");
   }
 
   /**
@@ -123,14 +394,34 @@ public final class OpenBaoClient implements AutoCloseable {
    * @return a future with the health status
    */
   public CompletableFuture<HealthStatus> healthAsync() {
-    return HealthCheck.checkAsync(transport, "/health");
+    return sys.probeAsync()
+        .handle(
+            (h, err) -> {
+              if (err == null) {
+                Map<String, String> details = new LinkedHashMap<>();
+                details.put("version", h.version());
+                details.put("initialized", String.valueOf(h.initialized()));
+                details.put("sealed", String.valueOf(h.sealed()));
+                details.put("standby", String.valueOf(h.standby()));
+                if (!h.clusterName().isEmpty()) {
+                  details.put("clusterName", h.clusterName());
+                }
+                return new HealthStatus(h.state().equals("active"), h.state(), details);
+              }
+              OpenBaoException e = HttpTransport.asSdkException(err, "health");
+              if (e instanceof CancelledException || e instanceof ConfigException) {
+                throw e;
+              }
+              return HealthCheck.fromError(e);
+            });
   }
 
   /**
-   * Performs an authenticated round trip ({@code GET /v1/ping}).
+   * Authenticated round trip ({@code GET /v1/auth/token/lookup-self}, allowed for every valid
+   * token).
    *
    * @return the latency
-   * @throws AuthenticationException on bad credentials
+   * @throws AuthenticationException on a missing, invalid or revoked token
    */
   public Duration ping() {
     return HttpTransport.await(pingAsync(), "ping");
@@ -143,16 +434,18 @@ public final class OpenBaoClient implements AutoCloseable {
    */
   public CompletableFuture<Duration> pingAsync() {
     long start = System.nanoTime();
-    return transport
-        .sendAsync(authorized(TransportRequest.get("/v1/ping").operation("ping")))
+    return ctx.http
+        .call("GET", "auth/token/lookup-self", "ping")
+        .login()
+        .run()
         .thenApply(r -> Duration.ofNanos(System.nanoTime() - start));
   }
 
   /**
-   * Returns the server version ({@code GET /version}).
+   * Returns the server version from {@code sys/health} (e.g. {@code 2.7.2}).
    *
    * @return the version string
-   * @throws UnsupportedException when the server exposes none
+   * @throws UnsupportedException when the server reports none
    */
   public String serverVersion() {
     return HttpTransport.await(serverVersionAsync(), "serverVersion");
@@ -164,24 +457,7 @@ public final class OpenBaoClient implements AutoCloseable {
    * @return a future with the version
    */
   public CompletableFuture<String> serverVersionAsync() {
-    return transport
-        .sendAsync(
-            authorized(
-                TransportRequest.get("/version").operation("serverVersion").acceptStatus(404)))
-        .thenApply(OpenBaoClient::version);
-  }
-
-  private static String version(TransportResponse r) {
-    JsonNode v = r.status() == 404 ? null : r.jsonNode().get("version");
-    if (v == null || !v.isTextual()) {
-      throw new UnsupportedException("serverVersion: the server exposes no version");
-    }
-    return v.asText();
-  }
-
-  private TransportRequest authorized(TransportRequest.Builder b) {
-    config.token().ifPresent(t -> b.header("Authorization", "Bearer " + t.reveal()));
-    return b.build();
+    return sys.versionAsync();
   }
 
   /**
@@ -193,11 +469,24 @@ public final class OpenBaoClient implements AutoCloseable {
     return closed.get();
   }
 
-  /** Stops registered resources and the transport. Idempotent. */
+  /**
+   * Stops token renewers, managed leases (revoking those with {@code revokeOnStop}) and secret
+   * watchers, then releases the transport. Idempotent.
+   */
   @Override
   public void close() {
     if (!closed.compareAndSet(false, true)) {
       return;
+    }
+    auth.stopRenewers();
+    try {
+      leases
+          .stopAllAsync()
+          .get(config.requestTimeout().toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException e) {
+      // best effort: close must not throw
     }
     List<AutoCloseable> copy;
     synchronized (resources) {
@@ -377,6 +666,39 @@ public final class OpenBaoClient implements AutoCloseable {
      */
     public Builder logger(Logger logger) {
       config.logger(logger);
+      return this;
+    }
+
+    /**
+     * Sets the namespace ({@code X-Vault-Namespace}).
+     *
+     * @param namespace namespace
+     * @return this builder
+     */
+    public Builder namespace(String namespace) {
+      config.namespace(namespace);
+      return this;
+    }
+
+    /**
+     * Sets the default KV mount.
+     *
+     * @param kvMount mount path
+     * @return this builder
+     */
+    public Builder kvMount(String kvMount) {
+      config.kvMount(kvMount);
+      return this;
+    }
+
+    /**
+     * Fixes the KV version (skips auto-detection).
+     *
+     * @param kvVersion 1 or 2
+     * @return this builder
+     */
+    public Builder kvVersion(int kvVersion) {
+      config.kvVersion(kvVersion);
       return this;
     }
 

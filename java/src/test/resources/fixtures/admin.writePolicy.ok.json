@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/policies/acl/sdk-tmp-f43633d7",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "policy": "path \"secret/data/sdk/tmp-f43633d7/*\" { capabilities = [\"read\"] }"
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxOTUifQ=="
+    ],
+    "body": null
+  }
+}

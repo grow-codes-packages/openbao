@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/policies/acl/bad-f43633d7",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "policy": "path { nonsense"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "failed to parse policy: At 1:17: key 'nonsense' expected start of object ('{') or assignment ('=')"
+      ]
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/ar-f43633d7/login",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "role_id": "0a235ec1-2d7d-fd7a-8b4f-8a684196312e",
+      "secret_id": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMTYifQ=="
+    ],
+    "body": {
+      "request_id": "52a56dfb-0ebc-0233-e308-876942aef651",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": null,
+      "warnings": null,
+      "auth": {
+        "client_token": "<redacted>",
+        "accessor": "<redacted>",
+        "policies": [
+          "default",
+          "sdk-tmp-f43633d7"
+        ],
+        "token_policies": [
+          "default",
+          "sdk-tmp-f43633d7"
+        ],
+        "metadata": {
+          "purpose": "sdk",
+          "role_name": "r1"
+        },
+        "lease_duration": 600,
+        "renewable": true,
+        "entity_id": "9b94b06d-7e53-7292-0b0c-91054ed6aa9c",
+        "token_type": "service",
+        "orphan": true,
+        "mfa_requirement": null,
+        "num_uses": 0
+      }
+    }
+  }
+}
