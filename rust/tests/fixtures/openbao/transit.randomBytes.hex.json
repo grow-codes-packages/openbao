@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/random/32",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "format": "hex"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjcifQ=="
+    ],
+    "body": {
+      "request_id": "82c1c8c3-4504-06c3-1de0-bd53eec044a0",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "random_bytes": "cea4da7f9f76f39dabe3e4e8ac89c8f3733748bd27c5379b809a1c90659861bb"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

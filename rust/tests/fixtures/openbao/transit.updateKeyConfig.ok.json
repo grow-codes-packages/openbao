@@ -1,0 +1,51 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/keys/sdk-f43633d7/config",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "min_decryption_version": 2
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjcifQ=="
+    ],
+    "body": {
+      "request_id": "a054c3d7-3c9f-cd0f-58d4-502b2bb2b5b1",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "allow_plaintext_backup": false,
+        "auto_rotate_period": 0,
+        "deletion_allowed": false,
+        "derived": false,
+        "exportable": false,
+        "imported_key": false,
+        "keys": {
+          "2": 1795033742
+        },
+        "latest_version": 2,
+        "min_available_version": 0,
+        "min_decryption_version": 2,
+        "min_encryption_version": 0,
+        "name": "sdk-f43633d7",
+        "soft_deleted": false,
+        "supports_decryption": true,
+        "supports_derivation": true,
+        "supports_encryption": true,
+        "supports_signing": false,
+        "type": "aes256-gcm96"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

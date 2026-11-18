@@ -1,0 +1,37 @@
+{
+  "request": {
+    "method": "LIST",
+    "path": "/v1/sys/version-history",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMDgifQ=="
+    ],
+    "body": {
+      "request_id": "d09bb006-e3e1-ad65-abb7-b18a2f2350d1",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "key_info": {
+          "2.7.2": {
+            "commit_date": "2026-10-26T20:32:27Z",
+            "previous_version": null,
+            "timestamp_installed": "2026-11-18T20:28:33Z"
+          }
+        },
+        "keys": [
+          "2.7.2"
+        ]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

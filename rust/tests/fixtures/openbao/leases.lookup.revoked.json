@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/leases/lookup",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "lease_id": "database/creds/sdk-short/zN9rVAFEhZsUHcvLBZAxnhg5"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "invalid lease"
+      ]
+    }
+  }
+}

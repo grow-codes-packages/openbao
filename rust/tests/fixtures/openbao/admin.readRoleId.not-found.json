@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/auth/ar-f43633d7/role/missing/role-id",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 404,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": []
+    }
+  }
+}

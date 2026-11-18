@@ -3,11 +3,12 @@
 name = "grow-openbao-example"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 publish = false
 
 [dependencies]
 grow-openbao = { path = "../../rust" }
 tokio = { version = "1.43", features = ["rt-multi-thread", "macros"] }
+serde_json = "1.0.120"
 
 [workspace]

@@ -2,6 +2,25 @@
 //! Blocking wrapper (feature `blocking`). Each client owns a current-thread tokio runtime.
 //!
 //! Do not use it from inside an async runtime (calls would panic); use the async client there.
+//!
+//! The core calls (`health`, `ping`, `server_version`, `close`) have blocking methods. Every
+//! service module is reached through [`OpenBaoClient::block_on`] with the async API, so the
+//! blocking client always offers exactly the async surface:
+//!
+//! ```no_run
+//! # fn demo() -> grow_openbao::Result<()> {
+//! use grow_openbao::blocking::OpenBaoClient;
+//! use grow_openbao::secrets::SecretsProvider;
+//!
+//! let client = OpenBaoClient::from_env()?;
+//! let bao = client.async_client();
+//! let ct = client.block_on(bao.transit().encrypt("app-key", b"hello", None))?;
+//! let value = client.block_on(bao.secrets().get_string("api-key", None))?;
+//! # let _ = (ct, value);
+//! client.close();
+//! # Ok(())
+//! # }
+//! ```
 
 use std::future::Future;
 use std::time::Duration;

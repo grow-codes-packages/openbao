@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/pki/cert/1b:51:42:eb:c5:7c:6c:ad:fd:ec:85:5d:e7:c1:67:10:db:61:b1:34",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxODcifQ=="
+    ],
+    "body": {
+      "request_id": "043f080a-6b47-fbf0-fb1d-c4cbfa19ab79",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "certificate": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIUG1FC68V8bK397IVd58FnENthsTQwCgYIKoZIzj0EAwIw\nIDEeMBwGA1UEAxMVR3JvdyBTREsgVGVzdCBSb290IENBMB4XDTI2MTExODIwMjg0\nMFoXDTI2MTExODIxMjkxMFowJDEiMCAGA1UEAxMZc3ZjLWY0MzYzM2Q3LmV4YW1w\nbGUudGVzdDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABORJ3QGADpK6l66jluRI\n9K0r/GCHPTo8R0szVrWqSGqSCCSGjs3F5RQG0AXT/RWYbZbFlZh9ELbfA4SIh3fp\n5gGjgbkwgbYwDgYDVR0PAQH/BAQDAgOoMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr\nBgEFBQcDAjAdBgNVHQ4EFgQUQJQT74AZG/CEfJIIOClDBDy9oMcwHwYDVR0jBBgw\nFoAUChpYFUp7awrJpJjXvCBhEKr1oEMwRQYDVR0RBD4wPIIZc3ZjLWY0MzYzM2Q3\nLmV4YW1wbGUudGVzdIIZYWx0LWY0MzYzM2Q3LmV4YW1wbGUudGVzdIcEfwAAATAK\nBggqhkjOPQQDAgNIADBFAiEAncsM3JSbQwEZ9l/ZvjIzivrQEbHVUT2KiS+1Ypr/\nf3UCIE5bskhZ+gyCH40z5Hdy419/CNrDtSAEGHVZ9k05qH7l\n-----END CERTIFICATE-----",
+        "revocation_time": 0,
+        "revocation_time_rfc3339": ""
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}
