@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/kv1/sdk/test/f43633d7/alpha",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "a": "1",
+      "n": 2
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNTgifQ=="
+    ],
+    "body": null
+  }
+}

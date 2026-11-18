@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/health?standbyok=true&sealedcode=299&uninitcode=298",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "initialized": true,
+      "sealed": false,
+      "standby": false,
+      "replication_performance_mode": "primary",
+      "replication_dr_mode": "disabled",
+      "server_time_utc": 1795033725,
+      "version": "2.7.2",
+      "cluster_name": "vault-cluster-4f361fe1",
+      "cluster_id": "0ca931b4-763a-990a-7917-965a74a37c43"
+    }
+  }
+}

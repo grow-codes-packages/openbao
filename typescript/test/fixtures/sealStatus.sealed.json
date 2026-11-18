@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/seal-status",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "type": "shamir",
+      "initialized": true,
+      "sealed": true,
+      "t": 1,
+      "n": 1,
+      "progress": 0,
+      "nonce": "",
+      "recovery_seal": false,
+      "version": "2.7.2",
+      "commit_date": "2026-10-26T20:32:27Z",
+      "migration": false,
+      "storage_type": "raft"
+    }
+  }
+}

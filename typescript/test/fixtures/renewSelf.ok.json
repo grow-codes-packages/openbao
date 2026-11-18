@@ -1,0 +1,43 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/token/renew-self",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "increment": "30m"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMjAifQ=="
+    ],
+    "body": {
+      "request_id": "095e067f-9f6a-b295-05f4-35028f53db2f",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": null,
+      "warnings": null,
+      "auth": {
+        "client_token": "<redacted>",
+        "accessor": "<redacted>",
+        "policies": ["default", "sdk-app"],
+        "token_policies": ["default", "sdk-app"],
+        "metadata": {
+          "run": "f43633d7"
+        },
+        "lease_duration": 1800,
+        "renewable": true,
+        "entity_id": "",
+        "token_type": "service",
+        "orphan": false,
+        "mfa_requirement": null,
+        "num_uses": 0
+      }
+    }
+  }
+}

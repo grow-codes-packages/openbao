@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/pki/tidy",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "tidy_cert_store": true,
+      "tidy_revoked_certs": true,
+      "safety_buffer": "1s"
+    }
+  },
+  "response": {
+    "status": 202,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxOTQifQ=="
+    ],
+    "body": {
+      "request_id": "",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": null,
+      "warnings": [
+        "Tidy operation successfully started. Any information from the operation will be printed to OpenBao's server logs."
+      ],
+      "auth": null
+    }
+  }
+}

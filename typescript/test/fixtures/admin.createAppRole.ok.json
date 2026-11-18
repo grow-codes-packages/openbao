@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/ar-f43633d7/role/r1",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "token_policies": ["sdk-tmp-f43633d7"],
+      "secret_id_num_uses": 1,
+      "token_ttl": "10m"
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMDgifQ=="
+    ],
+    "body": null
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/token/renew-self",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "increment": "30m"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["lease is not renewable"]
+    }
+  }
+}

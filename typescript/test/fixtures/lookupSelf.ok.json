@@ -1,0 +1,46 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/auth/token/lookup-self",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMTkifQ=="
+    ],
+    "body": {
+      "request_id": "45cf8582-291f-68c4-c571-b4b3db3688fb",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "accessor": "<redacted>",
+        "creation_time": 1795033729,
+        "creation_ttl": 3600,
+        "display_name": "token-sdk-test",
+        "entity_id": "",
+        "expire_time": "2026-11-18T21:28:50.039456413Z",
+        "explicit_max_ttl": 0,
+        "id": "<redacted>",
+        "issue_time": "2026-11-18T20:28:50.039464944Z",
+        "meta": {
+          "run": "f43633d7"
+        },
+        "num_uses": 0,
+        "orphan": false,
+        "path": "auth/token/create",
+        "policies": ["default", "sdk-app"],
+        "renewable": true,
+        "ttl": 3599,
+        "type": "service"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/sys/wrapping/unwrap",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "token": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyNTEifQ=="
+    ],
+    "body": {
+      "request_id": "800c4f4a-1934-03ea-35b6-b10fe0759c36",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "data": {
+          "value": "world"
+        },
+        "metadata": {
+          "created_time": "2026-11-18T20:28:44.399335551Z",
+          "custom_metadata": null,
+          "deletion_time": "",
+          "destroyed": false,
+          "version": 2
+        }
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

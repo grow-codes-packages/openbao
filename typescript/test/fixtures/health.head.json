@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "HEAD",
+    "path": "/v1/sys/health",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": null
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/token/create",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "policies": ["sdk-app"],
+      "ttl": "1h",
+      "explicit_max_ttl": "2h",
+      "num_uses": 0,
+      "no_parent": true
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMTkifQ=="
+    ],
+    "body": {
+      "request_id": "0147c157-aafb-964d-8c19-dbf2261d8ab0",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": null,
+      "warnings": null,
+      "auth": {
+        "client_token": "<redacted>",
+        "accessor": "<redacted>",
+        "policies": ["default", "sdk-app"],
+        "token_policies": ["default", "sdk-app"],
+        "metadata": null,
+        "lease_duration": 3600,
+        "renewable": true,
+        "entity_id": "",
+        "token_type": "service",
+        "orphan": true,
+        "mfa_requirement": null,
+        "num_uses": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/secret/data/sdk/test/f43633d7/alpha",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "options": {
+        "cas": 0
+      },
+      "data": {
+        "a": "x"
+      }
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["check-and-set parameter did not match the current version"]
+    }
+  }
+}

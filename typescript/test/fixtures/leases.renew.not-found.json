@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/leases/renew",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX",
+      "increment": 60
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["lease not found"]
+    }
+  }
+}

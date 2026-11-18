@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/sys/wrapping/lookup",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "token": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMzcifQ=="
+    ],
+    "body": {
+      "request_id": "c508f4f2-7893-aade-6cd7-2b0e63d10449",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "creation_path": "sys/wrapping/wrap",
+        "creation_time": "2026-11-18T20:29:16.720401442Z",
+        "creation_ttl": 60
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

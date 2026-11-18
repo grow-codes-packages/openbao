@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/unseal",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "key": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["'key' must be a valid hex or base64 string"]
+    }
+  }
+}

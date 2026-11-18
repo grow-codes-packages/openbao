@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/leases/renew",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX",
+      "increment": 600
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNzUifQ=="
+    ],
+    "body": {
+      "request_id": "2cacea35-6fc0-1cbe-dfda-2fe3c8530a6a",
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX",
+      "renewable": true,
+      "lease_duration": 600,
+      "data": null,
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

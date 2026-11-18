@@ -1,0 +1,31 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/verify/sdk-sign",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "input": "c2lnbi1tZQ==",
+      "signature": "vault:v1:IREMokGgqoj7LTRwteb0VqXy9nelwCUCLKW5BaLAyWx1F0Ynukl6ZYKPbxxuocwvXcupsgqhieFVaN3NHJZmCw=="
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjcifQ=="
+    ],
+    "body": {
+      "request_id": "572d197b-d463-0187-43c1-d446e30cc46f",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "valid": true
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

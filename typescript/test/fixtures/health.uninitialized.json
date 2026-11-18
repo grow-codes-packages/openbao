@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/health",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 501,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "initialized": false,
+      "sealed": true,
+      "standby": true,
+      "replication_performance_mode": "unknown",
+      "replication_dr_mode": "unknown",
+      "server_time_utc": 1795033726,
+      "version": "2.7.2"
+    }
+  }
+}

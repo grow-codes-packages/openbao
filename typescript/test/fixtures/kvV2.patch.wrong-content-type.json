@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/v1/secret/data/sdk/test/f43633d7/alpha",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "data": {
+        "b": "wrong-ct"
+      }
+    }
+  },
+  "response": {
+    "status": 415,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": [
+        "PATCH requires Content-Type of application/merge-patch+json, provided application/json"
+      ]
+    }
+  }
+}

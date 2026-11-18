@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/init",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "secret_shares": 1,
+      "secret_threshold": 1
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "keys": ["<redacted>"],
+      "keys_base64": ["<redacted>"],
+      "root_token": "<redacted>"
+    }
+  }
+}

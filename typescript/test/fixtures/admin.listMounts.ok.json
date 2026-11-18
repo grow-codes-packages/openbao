@@ -1,0 +1,377 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/mounts",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMDAifQ=="
+    ],
+    "body": {
+      "sys/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "passthrough_request_headers": ["Accept"]
+        },
+        "description": "system endpoints used for control, policy and debugging",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": true,
+        "type": "system",
+        "uuid": "7da4aacc-4df3-364b-2125-17a33e0711c5"
+      },
+      "secret/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "deprecation_status": "supported",
+        "description": "SDK KV v2",
+        "external_entropy_access": false,
+        "local": false,
+        "options": {
+          "version": "2"
+        },
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "kv",
+        "uuid": "fc0785ca-fa35-d906-a00c-4590c93e0af7"
+      },
+      "tmp-f43633d7/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "deprecation_status": "supported",
+        "description": "sdk temp",
+        "external_entropy_access": false,
+        "local": false,
+        "options": {
+          "version": "2"
+        },
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "kv",
+        "uuid": "a2c62f08-8c9d-a785-c5e4-48806cc5e79f"
+      },
+      "identity/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "passthrough_request_headers": ["Authorization"]
+        },
+        "description": "identity store",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "identity",
+        "uuid": "f4357383-d02a-d39a-30e8-5be45b58fd25"
+      },
+      "cubbyhole/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "description": "per-token private secret storage",
+        "external_entropy_access": false,
+        "local": true,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "cubbyhole",
+        "uuid": "2b2a2a00-bb7d-2b8c-d836-be6e616a207e"
+      },
+      "kv1/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "deprecation_status": "supported",
+        "description": "SDK KV v1",
+        "external_entropy_access": false,
+        "local": false,
+        "options": {
+          "version": "1"
+        },
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "kv",
+        "uuid": "709098d2-e28b-25af-40e4-cd0ced436efe"
+      },
+      "transit/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "deprecation_status": "supported",
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "transit",
+        "uuid": "918bebe5-0d97-ace3-d537-74e81e99d4d9"
+      },
+      "database/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0
+        },
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "database",
+        "uuid": "83ab7209-0a32-5503-9c76-f8246cc139eb"
+      },
+      "pki/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 315360000
+        },
+        "deprecation_status": "supported",
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "pki",
+        "uuid": "9c998240-4d88-bf01-5d55-23cd23d60de7"
+      },
+      "request_id": "82c9e911-1e59-78e1-35ca-18b8fbaf37eb",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "cubbyhole/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0
+          },
+          "description": "per-token private secret storage",
+          "external_entropy_access": false,
+          "local": true,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "cubbyhole",
+          "uuid": "2b2a2a00-bb7d-2b8c-d836-be6e616a207e"
+        },
+        "database/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0
+          },
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "database",
+          "uuid": "83ab7209-0a32-5503-9c76-f8246cc139eb"
+        },
+        "identity/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "passthrough_request_headers": ["Authorization"]
+          },
+          "description": "identity store",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "identity",
+          "uuid": "f4357383-d02a-d39a-30e8-5be45b58fd25"
+        },
+        "kv1/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0
+          },
+          "deprecation_status": "supported",
+          "description": "SDK KV v1",
+          "external_entropy_access": false,
+          "local": false,
+          "options": {
+            "version": "1"
+          },
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "kv",
+          "uuid": "709098d2-e28b-25af-40e4-cd0ced436efe"
+        },
+        "pki/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 315360000
+          },
+          "deprecation_status": "supported",
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "pki",
+          "uuid": "9c998240-4d88-bf01-5d55-23cd23d60de7"
+        },
+        "secret/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0
+          },
+          "deprecation_status": "supported",
+          "description": "SDK KV v2",
+          "external_entropy_access": false,
+          "local": false,
+          "options": {
+            "version": "2"
+          },
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "kv",
+          "uuid": "fc0785ca-fa35-d906-a00c-4590c93e0af7"
+        },
+        "sys/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "passthrough_request_headers": ["Accept"]
+          },
+          "description": "system endpoints used for control, policy and debugging",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": true,
+          "type": "system",
+          "uuid": "7da4aacc-4df3-364b-2125-17a33e0711c5"
+        },
+        "tmp-f43633d7/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0
+          },
+          "deprecation_status": "supported",
+          "description": "sdk temp",
+          "external_entropy_access": false,
+          "local": false,
+          "options": {
+            "version": "2"
+          },
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "kv",
+          "uuid": "a2c62f08-8c9d-a785-c5e4-48806cc5e79f"
+        },
+        "transit/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0
+          },
+          "deprecation_status": "supported",
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "transit",
+          "uuid": "918bebe5-0d97-ace3-d537-74e81e99d4d9"
+        }
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

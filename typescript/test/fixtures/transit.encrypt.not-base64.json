@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/encrypt/sdk-f43633d7",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "plaintext": "%%%"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["illegal base64 data at input byte 0"]
+    }
+  }
+}

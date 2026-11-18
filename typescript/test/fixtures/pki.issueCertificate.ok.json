@@ -1,0 +1,42 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/pki/issue/sdk-test",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "common_name": "svc-f43633d7.example.test",
+      "alt_names": "alt-f43633d7.example.test",
+      "ip_sans": "127.0.0.1",
+      "ttl": "1h"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxODYifQ=="
+    ],
+    "body": {
+      "request_id": "25edc8df-57bd-c06d-174b-81542cd995f9",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "ca_chain": [
+          "-----BEGIN CERTIFICATE-----\nMIIBpTCCAUugAwIBAgIUKR/UtRwhIEHVO5RTmHawaI2D91kwCgYIKoZIzj0EAwIw\nIDEeMBwGA1UEAxMVR3JvdyBTREsgVGVzdCBSb290IENBMB4XDTI2MTExODIwMjgw\nN1oXDTM2MTExNTIwMjgzN1owIDEeMBwGA1UEAxMVR3JvdyBTREsgVGVzdCBSb290\nIENBMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEnB5WXePwktXecDNAFz8L3crS\n+NToPFZDcodN1W+hrgACDaH8649Nn6R0YoSeRdAQDwT8vmNlTTBM+Aan8y56fqNj\nMGEwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFAoa\nWBVKe2sKyaSY17wgYRCq9aBDMB8GA1UdIwQYMBaAFAoaWBVKe2sKyaSY17wgYRCq\n9aBDMAoGCCqGSM49BAMCA0gAMEUCIE2zkbxuc1piK9gyRGBfj2fUM587BiDeavsP\nUqmErxKhAiEAj8eAI2C72WN/kbtCV8mExlBKAWHZ0IV+RAX/nB7OKDU=\n-----END CERTIFICATE-----"
+        ],
+        "certificate": "-----BEGIN CERTIFICATE-----\nMIICADCCAaagAwIBAgIUG1FC68V8bK397IVd58FnENthsTQwCgYIKoZIzj0EAwIw\nIDEeMBwGA1UEAxMVR3JvdyBTREsgVGVzdCBSb290IENBMB4XDTI2MTExODIwMjg0\nMFoXDTI2MTExODIxMjkxMFowJDEiMCAGA1UEAxMZc3ZjLWY0MzYzM2Q3LmV4YW1w\nbGUudGVzdDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABORJ3QGADpK6l66jluRI\n9K0r/GCHPTo8R0szVrWqSGqSCCSGjs3F5RQG0AXT/RWYbZbFlZh9ELbfA4SIh3fp\n5gGjgbkwgbYwDgYDVR0PAQH/BAQDAgOoMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr\nBgEFBQcDAjAdBgNVHQ4EFgQUQJQT74AZG/CEfJIIOClDBDy9oMcwHwYDVR0jBBgw\nFoAUChpYFUp7awrJpJjXvCBhEKr1oEMwRQYDVR0RBD4wPIIZc3ZjLWY0MzYzM2Q3\nLmV4YW1wbGUudGVzdIIZYWx0LWY0MzYzM2Q3LmV4YW1wbGUudGVzdIcEfwAAATAK\nBggqhkjOPQQDAgNIADBFAiEAncsM3JSbQwEZ9l/ZvjIzivrQEbHVUT2KiS+1Ypr/\nf3UCIE5bskhZ+gyCH40z5Hdy419/CNrDtSAEGHVZ9k05qH7l\n-----END CERTIFICATE-----",
+        "expiration": 1795037350,
+        "issuing_ca": "-----BEGIN CERTIFICATE-----\nMIIBpTCCAUugAwIBAgIUKR/UtRwhIEHVO5RTmHawaI2D91kwCgYIKoZIzj0EAwIw\nIDEeMBwGA1UEAxMVR3JvdyBTREsgVGVzdCBSb290IENBMB4XDTI2MTExODIwMjgw\nN1oXDTM2MTExNTIwMjgzN1owIDEeMBwGA1UEAxMVR3JvdyBTREsgVGVzdCBSb290\nIENBMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEnB5WXePwktXecDNAFz8L3crS\n+NToPFZDcodN1W+hrgACDaH8649Nn6R0YoSeRdAQDwT8vmNlTTBM+Aan8y56fqNj\nMGEwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFAoa\nWBVKe2sKyaSY17wgYRCq9aBDMB8GA1UdIwQYMBaAFAoaWBVKe2sKyaSY17wgYRCq\n9aBDMAoGCCqGSM49BAMCA0gAMEUCIE2zkbxuc1piK9gyRGBfj2fUM587BiDeavsP\nUqmErxKhAiEAj8eAI2C72WN/kbtCV8mExlBKAWHZ0IV+RAX/nB7OKDU=\n-----END CERTIFICATE-----",
+        "not_before": 1795033720,
+        "private_key": "<redacted>",
+        "private_key_type": "ec",
+        "serial_number": "1b:51:42:eb:c5:7c:6c:ad:fd:ec:85:5d:e7:c1:67:10:db:61:b1:34"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

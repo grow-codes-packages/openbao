@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/sign/sdk-f43633d7",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "input": "eA=="
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["key type aes256-gcm96 does not support signing"]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/secret/data/sdk/test/f43633d7/alpha",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 404,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNDkifQ=="
+    ],
+    "body": {
+      "request_id": "32711005-76b9-ca52-4214-4622fb5c8cb4",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "data": null,
+        "metadata": {
+          "created_time": "2026-11-18T20:28:55.339213448Z",
+          "custom_metadata": {
+            "owner": "sdk",
+            "run": "f43633d7"
+          },
+          "deletion_time": "2026-11-18T20:28:56.920307152Z",
+          "destroyed": false,
+          "version": 3
+        }
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}
