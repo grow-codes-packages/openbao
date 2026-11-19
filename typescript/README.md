@@ -1,6 +1,6 @@
-# @grow-codes/**KEY**
+# @grow-codes/openbao
 
-TypeScript SDK for [**DISPLAY**](https://grow-codes-packages.github.io/openbao/) by Grow Codes.
+TypeScript SDK for [OpenBao](https://grow-codes-packages.github.io/openbao/) by Grow Codes.
 Node.js 22.12 or newer, ESM and CommonJS, full type definitions.
 
 ```sh
@@ -28,4 +28,4 @@ Test helpers (in-memory fakes and the conformance runner) live in
 `@grow-codes/openbao/testing`.
 
 Documentation: https://grow-codes-packages.github.io/openbao/ · Licence: Apache-2.0.
-**DISPLAY** is a trademark of **VENDOR**; this package is not affiliated with or endorsed by it.
+OpenBao is a trademark of OpenBao a Series of LF Projects, LLC; this package is not affiliated with or endorsed by it.
