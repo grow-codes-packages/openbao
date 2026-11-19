@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/grow-codes-packages/openbao/compare/python-v0.1.1...python-v0.1.2) (2026-11-19)
+
+
+### Dependencies
+
+* **python:** Update cryptography requirement from &gt;=43 to &gt;=50.0.2 in /python in the python group across 1 directory ([#9](https://github.com/grow-codes-packages/openbao/issues/9)) ([e0d5610](https://github.com/grow-codes-packages/openbao/commit/e0d561089593ad7b541a1d71a5cef489d61383e5))
+
 ## [0.1.1](https://github.com/grow-codes-packages/openbao/compare/python-v0.1.0...python-v0.1.1) (2026-11-19)
 
 
