@@ -1,6 +1,6 @@
 {
   "name": "@grow-codes/openbao",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Grow Codes SDK for OpenBao (TypeScript)",
   "keywords": [
     "openbao",

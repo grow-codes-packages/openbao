@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/grow-codes-packages/openbao/compare/rust-v0.1.0...rust-v0.1.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* sync openbao to sdk-kit 0.3.0 (GRO-1367) ([#13](https://github.com/grow-codes-packages/openbao/issues/13)) ([17de63c](https://github.com/grow-codes-packages/openbao/commit/17de63c5df028aca503d060745b60a59deaeca0b))
+
 ## 0.1.0 (2026-11-19)
 
 
