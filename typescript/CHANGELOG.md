@@ -1,0 +1,15 @@
+# Changelog
+
+## [0.1.1](https://github.com/grow-codes-packages/openbao/compare/typescript-v0.1.0...typescript-v0.1.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **typescript:** fill in the package README placeholders ([#11](https://github.com/grow-codes-packages/openbao/issues/11)) ([b1f69ca](https://github.com/grow-codes-packages/openbao/commit/b1f69cabf015c2341fd9b3bc22f92123f2dca17f))
+
+## 0.1.0 (2026-11-19)
+
+
+### Bug Fixes
+
+* sync openbao to sdk-kit 0.2.0 and make all five packages release-ready (GRO-1367) ([#6](https://github.com/grow-codes-packages/openbao/issues/6)) ([06cb56a](https://github.com/grow-codes-packages/openbao/commit/06cb56a153ef838eb2c066189c60f63d85b39ea5))
