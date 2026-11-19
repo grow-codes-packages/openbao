@@ -37,5 +37,5 @@ Start with [Install](install.md) and the [Quickstart](quickstart.md).
 
 !!! note "Independent project"
     This SDK is made by [Grow Codes](https://grow.codes). OpenBao is a trademark of
-    OpenBao a Series of LF Projects, LLC. This project is not affiliated with or endorsed by OpenBao a Series of LF Projects, LLC. See
+    its owner (OpenBao a Series of LF Projects, LLC); this project is not affiliated with or endorsed by it. See
     [License & disclaimer](license.md).

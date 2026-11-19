@@ -45,6 +45,7 @@ dev = [
   "pip-licenses>=5.0",
   "mkdocs>=1.6",
   "mkdocstrings[python]>=0.27",
+  "twine>=6.1",
 ]
 
 [project.urls]
@@ -83,6 +84,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S", "PLC0415", "N802", "B017", "PT011", "PT018", "N815", "RUF001", "RUF012", "SIM117"]
+"integration/**" = ["S", "PLC0415", "N802", "B017", "PT011", "PT018", "N815", "RUF001", "RUF012", "SIM117"]
 "tools/**" = ["S"]
 
 [tool.ruff.format]

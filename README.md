@@ -769,7 +769,7 @@ Licensed under the [Apache License, Version 2.0](LICENSE). See [NOTICE](NOTICE) 
 ## Trademarks and disclaimer
 
 This is an independent, community-maintained project. It is **not affiliated with, endorsed or
-sponsored by OpenBao a Series of LF Projects, LLC**. OpenBao is a trademark of OpenBao a Series of LF Projects, LLC; it is used here only to name the
+sponsored by its owner (OpenBao a Series of LF Projects, LLC)**. OpenBao is a trademark of OpenBao a Series of LF Projects, LLC; it is used here only to name the
 service this SDK connects to. The OpenBao server is licensed separately by its owner
 (MPL-2.0 (Linux Foundation)).
 
