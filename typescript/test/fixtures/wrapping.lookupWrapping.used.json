@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/sys/wrapping/lookup",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "token": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["wrapping token is not valid or does not exist"]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/kv1/sdk/test/f43633d7/alpha",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNTkifQ=="
+    ],
+    "body": {
+      "request_id": "0461697c-9695-ceec-ceb6-4c9558c042c1",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 2764800,
+      "data": {
+        "a": "2"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

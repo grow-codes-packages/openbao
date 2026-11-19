@@ -38,7 +38,7 @@ coverage:
 	$(M) jacoco:check@coverage-check
 
 license:
-	$(M) license:add-third-party
+	$(M) -Dlicense.force=true license:add-third-party
 
 pack:
 	$(M) -DskipTests -Djacoco.skip=true install

@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/v1/kv1/sdk/test/f43633d7/alpha",
+    "headers": ["Content-Type: application/merge-patch+json"],
+    "body": {
+      "a": "3"
+    }
+  },
+  "response": {
+    "status": 405,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["1 error occurred:\n\t* unsupported operation\n\n"]
+    }
+  }
+}

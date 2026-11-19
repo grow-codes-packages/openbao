@@ -1,0 +1,225 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/auth",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMDUifQ=="
+    ],
+    "body": {
+      "token/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "token_type": "default-service"
+        },
+        "description": "token based credentials",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "token",
+        "uuid": "b1c0d4dd-9f5b-47ef-863a-e2fe4354fc1f"
+      },
+      "approle/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "token_type": "default-service"
+        },
+        "deprecation_status": "supported",
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "approle",
+        "uuid": "36cb10bc-29a1-08aa-5979-433f74daf1bb"
+      },
+      "userpass/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "token_type": "default-service"
+        },
+        "deprecation_status": "supported",
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "userpass",
+        "uuid": "534cce7a-6e61-3eeb-707a-21121ad992f8"
+      },
+      "jwt/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "token_type": "default-service"
+        },
+        "deprecation_status": "supported",
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "jwt",
+        "uuid": "f8384a08-2e0a-3a8e-819a-6bcfd89b531c"
+      },
+      "kubernetes/": {
+        "accessor": "<redacted>",
+        "config": {
+          "default_lease_ttl": 0,
+          "force_no_cache": false,
+          "max_lease_ttl": 0,
+          "token_type": "default-service"
+        },
+        "deprecation_status": "supported",
+        "description": "",
+        "external_entropy_access": false,
+        "local": false,
+        "options": null,
+        "plugin_version": "",
+        "running_plugin_version": "v2.7.2+builtin.bao",
+        "running_sha256": "",
+        "seal_wrap": false,
+        "type": "kubernetes",
+        "uuid": "316e3855-6728-2373-3a22-6e0899fe2603"
+      },
+      "request_id": "5e728b85-5e53-b298-81a3-00c908df0fdd",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "approle/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "token_type": "default-service"
+          },
+          "deprecation_status": "supported",
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "approle",
+          "uuid": "36cb10bc-29a1-08aa-5979-433f74daf1bb"
+        },
+        "jwt/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "token_type": "default-service"
+          },
+          "deprecation_status": "supported",
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "jwt",
+          "uuid": "f8384a08-2e0a-3a8e-819a-6bcfd89b531c"
+        },
+        "kubernetes/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "token_type": "default-service"
+          },
+          "deprecation_status": "supported",
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "kubernetes",
+          "uuid": "316e3855-6728-2373-3a22-6e0899fe2603"
+        },
+        "token/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "token_type": "default-service"
+          },
+          "description": "token based credentials",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "token",
+          "uuid": "b1c0d4dd-9f5b-47ef-863a-e2fe4354fc1f"
+        },
+        "userpass/": {
+          "accessor": "<redacted>",
+          "config": {
+            "default_lease_ttl": 0,
+            "force_no_cache": false,
+            "max_lease_ttl": 0,
+            "token_type": "default-service"
+          },
+          "deprecation_status": "supported",
+          "description": "",
+          "external_entropy_access": false,
+          "local": false,
+          "options": null,
+          "plugin_version": "",
+          "running_plugin_version": "v2.7.2+builtin.bao",
+          "running_sha256": "",
+          "seal_wrap": false,
+          "type": "userpass",
+          "uuid": "534cce7a-6e61-3eeb-707a-21121ad992f8"
+        }
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

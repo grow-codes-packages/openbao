@@ -27,7 +27,11 @@ has the same functions, options, defaults, error codes and behaviour, tested aga
 - **Redaction everywhere**: credentials never appear in errors, logs, hooks or `toString`
   ([Redaction](redaction.md)).
 - **Secrets**: typed getters, bulk reads, `loadEnv`, watch and a TTL cache ([Secrets](secrets.md)).
-- **Service functions** for the OpenBao API ([Functions](functions.md)).
+- **The OpenBao API** ([Functions](functions.md)): [auth](functions/auth.md) with token
+  renewal, [KV v1/v2](functions/kv.md), [transit](functions/transit.md),
+  [database credentials and leases](functions/database.md), [PKI](functions/pki.md),
+  [system and admin](functions/system.md), [response wrapping](functions/wrapping.md) and
+  [testing helpers](functions/testing.md).
 
 Start with [Install](install.md) and the [Quickstart](quickstart.md).
 

@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/secret/data/sdk/test/f43633d7/beta",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "data": {
+        "v": "no-cas"
+      }
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "check-and-set parameter required for this call"
+      ]
+    }
+  }
+}

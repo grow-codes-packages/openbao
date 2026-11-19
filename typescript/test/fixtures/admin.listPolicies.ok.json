@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "LIST",
+    "path": "/v1/sys/policies/acl",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxOTUifQ=="
+    ],
+    "body": {
+      "request_id": "13b18a16-e06e-c07c-80f6-4d481d079951",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "keys": ["default", "sdk-app", "sdk-tmp-f43633d7", "root"]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

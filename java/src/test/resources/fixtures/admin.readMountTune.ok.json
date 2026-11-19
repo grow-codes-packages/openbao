@@ -1,0 +1,41 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/sys/mounts/tmp-f43633d7/tune",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMDAifQ=="
+    ],
+    "body": {
+      "force_no_cache": false,
+      "options": {
+        "version": "2"
+      },
+      "description": "sdk temp",
+      "default_lease_ttl": 2764800,
+      "max_lease_ttl": 2764800,
+      "request_id": "200719a4-52ce-9981-0328-69a6ac5dcbcd",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "default_lease_ttl": 2764800,
+        "description": "sdk temp",
+        "force_no_cache": false,
+        "max_lease_ttl": 2764800,
+        "options": {
+          "version": "2"
+        }
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

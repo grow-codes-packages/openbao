@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/leases/revoke",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX"
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNzgifQ=="
+    ],
+    "body": null
+  }
+}

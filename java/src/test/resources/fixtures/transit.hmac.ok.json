@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/hmac/sdk-f43633d7/sha2-256",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "input": "aG1hYy1tZQ=="
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjcifQ=="
+    ],
+    "body": {
+      "request_id": "338029c4-8a0d-1671-fc63-a8b26357c820",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "hmac": "vault:v2:lZA3ab+VfM1pnali4CmebnS8xdrZr0PX2Ti3sK0zJ1E="
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

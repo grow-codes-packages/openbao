@@ -1,7 +1,7 @@
 # TypeScript integration tests
 
 A consumer project: it installs the packed `@grow-codes/openbao` tarball (never the source tree)
-and runs the integration and conformance tests with `node --test` against a real **DISPLAY**.
+and runs the integration and conformance tests with `node --test` against a real OpenBao server.
 
 ```sh
 cd typescript && make pack            # writes dist/grow-codes-openbao-<version>.tgz

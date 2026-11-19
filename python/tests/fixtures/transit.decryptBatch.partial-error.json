@@ -1,0 +1,49 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/decrypt/sdk-f43633d7",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "batch_input": [
+        {
+          "ciphertext": "vault:v2:1i9u6AeoYFCMJ48Pm3EsKA3lWNtdi5J10gtNbD5f7A=="
+        },
+        {
+          "ciphertext": "vault:v1:AAAA"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjYifQ=="
+    ],
+    "body": {
+      "request_id": "ef16fc45-5990-272e-b9da-cbc55cdbf5bb",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "batch_results": [
+          {
+            "plaintext": "b25l",
+            "reference": ""
+          },
+          {
+            "plaintext": "",
+            "error": "invalid ciphertext length",
+            "reference": ""
+          }
+        ]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

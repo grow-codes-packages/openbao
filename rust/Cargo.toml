@@ -3,7 +3,7 @@
 name = "grow-openbao"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 # MSRV-aware dependency resolution (picks versions that still build on rust-version).
 resolver = "3"
 description = "Rust SDK for OpenBao by Grow Codes"
@@ -13,7 +13,7 @@ homepage = "https://grow-codes-packages.github.io/openbao/"
 repository = "https://github.com/grow-codes-packages/openbao"
 documentation = "https://docs.rs/grow-openbao"
 readme = "README.md"
-keywords = ["grow-codes", "sdk", "client"]
+keywords = ["grow-codes", "sdk", "openbao", "vault", "secrets"]
 categories = ["api-bindings", "asynchronous"]
 include = ["src/**/*.rs", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 
@@ -29,9 +29,11 @@ testing = []
 
 [dependencies]
 async-trait = "0.1.80"
+base64 = "0.22"
 bytes = "1.6"
 futures = { version = "0.3.30", default-features = false, features = ["std", "async-await"] }
 httpdate = "1.0"
+percent-encoding = "2.3"
 rand = { version = "0.9", default-features = false, features = ["std", "thread_rng"] }
 reqwest = { version = "0.12.9", default-features = false, features = ["rustls-tls-native-roots", "json", "gzip"] }
 serde = { version = "1.0.200", features = ["derive"] }

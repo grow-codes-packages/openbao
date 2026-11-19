@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/database/config/pg-f43633d7",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "plugin_name": "postgresql-database-plugin",
+      "connection_url": "postgresql://{{username}}:{{password}}@postgres:5432/app?sslmode=disable",
+      "username": "postgres",
+      "password": "<redacted>",
+      "allowed_roles": ["ro-f43633d7"],
+      "verify_connection": true
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNzEifQ=="
+    ],
+    "body": null
+  }
+}

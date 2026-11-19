@@ -7,14 +7,6 @@ PY := $(VENV)/bin/python
 COVERAGE_LINES ?= 90
 COVERAGE_BRANCHES ?= 90
 PKG := grow_openbao
-# Licences allowed for runtime dependencies (SPEC section 7). pip-licenses reports either the
-# SPDX expression or the trove classifier name, so both spellings are listed.
-# PSF-2.0 covers typing_extensions (required by anyio/httpx on older Pythons and by
-# opentelemetry-api); it is permissive but not in the SPEC list (reported as a spec question).
-LICENSE_ALLOW := Apache-2.0;Apache Software License;Apache License 2.0;MIT;MIT License
-LICENSE_ALLOW := $(LICENSE_ALLOW);BSD-2-Clause;BSD-3-Clause;BSD License;BSD;ISC;ISC License (ISCL)
-LICENSE_ALLOW := $(LICENSE_ALLOW);Zlib;0BSD;CC0-1.0;MPL-2.0;Mozilla Public License 2.0 (MPL 2.0)
-LICENSE_ALLOW := $(LICENSE_ALLOW);Unicode-3.0;Unicode-DFS-2016;PSF-2.0;Python Software Foundation License
 
 .PHONY: deps build lint test coverage license pack docs clean
 
@@ -45,14 +37,15 @@ coverage:
 		--lines $(COVERAGE_LINES) --branches $(COVERAGE_BRANCHES)
 
 # Installs the package with every optional runtime extra into a clean venv and checks the
-# licences of everything that ends up there (dev tools are not included).
+# licences of everything that ends up there against the SPEC allowlist (tools/licensecheck.py;
+# dev tools are not included).
 license:
 	rm -rf build/license-venv
 	$(PYTHON) -m venv build/license-venv
 	build/license-venv/bin/python -m pip install --quiet ".[all]"
-	$(PY) -m piplicenses --python build/license-venv/bin/python --from=mixed \
-		--ignore-packages grow-openbao pip setuptools wheel \
-		--allow-only="$(LICENSE_ALLOW)"
+	$(PY) -m piplicenses --python build/license-venv/bin/python --from=mixed --format=json \
+		--ignore-packages grow-openbao pip setuptools wheel > build/licenses.json
+	$(PY) tools/licensecheck.py < build/licenses.json
 
 pack:
 	rm -rf dist

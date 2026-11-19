@@ -13,11 +13,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 /**
  * Immutable configuration of a {@link OpenBaoClient} (SPEC section 2.2).
@@ -26,21 +29,47 @@ import java.util.Optional;
  * Precedence: explicit builder value &gt; SDK variable ({@link EnvReader#DEFAULT_PREFIX} + name)
  * &gt; vendor variables &gt; default. {@link #toString()} never prints credentials.
  *
- * <p>This file is owned by the service package (generated once by sdk-kit); add service fields
- * here.
+ * <p>Environment variables ({@link #fromEnv()}): {@code GROW_OPENBAO_URL} / {@code BAO_ADDR} /
+ * {@code VAULT_ADDR}, {@code GROW_OPENBAO_TOKEN} / {@code BAO_TOKEN} / {@code VAULT_TOKEN}, {@code
+ * GROW_OPENBAO_NAMESPACE} / {@code BAO_NAMESPACE} / {@code VAULT_NAMESPACE}, {@code
+ * GROW_OPENBAO_CA_CERT} / {@code BAO_CACERT} / {@code VAULT_CACERT}, {@code
+ * GROW_OPENBAO_CLIENT_CERT} / {@code BAO_CLIENT_CERT} / {@code VAULT_CLIENT_CERT}, {@code
+ * GROW_OPENBAO_CLIENT_KEY} / {@code BAO_CLIENT_KEY} / {@code VAULT_CLIENT_KEY}, {@code
+ * GROW_OPENBAO_INSECURE_SKIP_VERIFY} / {@code BAO_SKIP_VERIFY} / {@code VAULT_SKIP_VERIFY}, {@code
+ * GROW_OPENBAO_KV_MOUNT}, {@code GROW_OPENBAO_KV_VERSION} ({@code 1}, {@code 2}; {@code 0} =
+ * auto-detect), {@code GROW_OPENBAO_SECRETS_PATH}, plus {@code GROW_OPENBAO_PROXY}, the timeouts
+ * and {@code GROW_OPENBAO_MAX_RETRIES}.
  */
 public final class OpenBaoConfig {
   /** Default endpoint. */
-  public static final String DEFAULT_URL = "http://127.0.0.1:8080";
+  public static final String DEFAULT_URL = "http://127.0.0.1:8200";
+
+  /** Default KV mount used by {@code client.kv()} and {@code client.secrets()}. */
+  public static final String DEFAULT_KV_MOUNT = "secret";
+
+  /** Default KV data field that holds a {@code client.secrets()} value. */
+  public static final String DEFAULT_VALUE_FIELD = "value";
 
   /** Vendor variables read for {@code url} after the SDK variable {@code URL}, in order. */
-  static final String[] URL_VENDOR_VARS = {};
+  static final String[] URL_VENDOR_VARS = {"BAO_ADDR", "VAULT_ADDR"};
 
   /** Vendor variables read for {@code token} after the SDK variable {@code TOKEN}, in order. */
-  static final String[] TOKEN_VENDOR_VARS = {};
+  static final String[] TOKEN_VENDOR_VARS = {"BAO_TOKEN", "VAULT_TOKEN"};
 
   /** Vendor variables read for the CA bundle after the SDK variable {@code CA_CERT}. */
-  static final String[] CA_CERT_VENDOR_VARS = {};
+  static final String[] CA_CERT_VENDOR_VARS = {"BAO_CACERT", "VAULT_CACERT"};
+
+  /** Vendor variables read for the namespace after the SDK variable {@code NAMESPACE}. */
+  static final String[] NAMESPACE_VENDOR_VARS = {"BAO_NAMESPACE", "VAULT_NAMESPACE"};
+
+  /** Vendor variables read for the client certificate after {@code CLIENT_CERT}. */
+  static final String[] CLIENT_CERT_VENDOR_VARS = {"BAO_CLIENT_CERT", "VAULT_CLIENT_CERT"};
+
+  /** Vendor variables read for the client key after {@code CLIENT_KEY}. */
+  static final String[] CLIENT_KEY_VENDOR_VARS = {"BAO_CLIENT_KEY", "VAULT_CLIENT_KEY"};
+
+  /** Vendor variables read for TLS verification after {@code INSECURE_SKIP_VERIFY}. */
+  static final String[] SKIP_VERIFY_VENDOR_VARS = {"BAO_SKIP_VERIFY", "VAULT_SKIP_VERIFY"};
 
   private final String url;
   private final Secret token;
@@ -54,6 +83,11 @@ public final class OpenBaoConfig {
   private final String userAgentSuffix;
   private final Hooks hooks;
   private final Logger logger;
+  private final String namespace;
+  private final String kvMount;
+  private final Integer kvVersion;
+  private final String secretsPath;
+  private final String valueField;
 
   private OpenBaoConfig(Builder b) {
     this.url = b.url != null ? b.url : DEFAULT_URL;
@@ -68,6 +102,11 @@ public final class OpenBaoConfig {
     this.userAgentSuffix = b.userAgentSuffix;
     this.hooks = b.hooks != null ? b.hooks : Hooks.NONE;
     this.logger = b.logger != null ? b.logger : Logger.NOOP;
+    this.namespace = b.namespace == null || b.namespace.isEmpty() ? null : b.namespace;
+    this.kvMount = b.kvMount != null ? b.kvMount : DEFAULT_KV_MOUNT;
+    this.kvVersion = b.kvVersion;
+    this.secretsPath = b.secretsPath == null ? "" : b.secretsPath.replaceAll("^/+|/+$", "");
+    this.valueField = b.valueField != null ? b.valueField : DEFAULT_VALUE_FIELD;
   }
 
   /**
@@ -120,6 +159,21 @@ public final class OpenBaoConfig {
     requirePositive("requestTimeout", requestTimeout);
     requirePositive("totalTimeout", totalTimeout);
     tls.validate();
+    if (retry.maxRetries() < 0) {
+      throw new ConfigException("config: maxRetries must be >= 0");
+    }
+    if (token != null && !token.isCleared() && token.reveal().trim().isEmpty()) {
+      throw new ConfigException("config: token must not be blank");
+    }
+    if (kvMount.replaceAll("^/+|/+$", "").isEmpty()) {
+      throw new ConfigException("config: kvMount must not be empty");
+    }
+    if (kvVersion != null && kvVersion != 1 && kvVersion != 2) {
+      throw new ConfigException("config: kvVersion must be 1 or 2");
+    }
+    if (valueField.trim().isEmpty()) {
+      throw new ConfigException("config: valueField must not be empty");
+    }
     if (proxy != null) {
       try {
         URI p = new URI(proxy);
@@ -144,6 +198,18 @@ public final class OpenBaoConfig {
    * @return the transport configuration
    */
   public TransportConfig toTransportConfig() {
+    return toTransportConfig(
+        () -> token == null || token.isCleared() ? List.of() : List.of(token.reveal()));
+  }
+
+  /**
+   * Translates the common fields into transport settings with a custom source of secret values to
+   * redact (the client adds tokens obtained by a login).
+   *
+   * @param knownSecrets supplier of credential values removed from error messages
+   * @return the transport configuration
+   */
+  public TransportConfig toTransportConfig(Supplier<Collection<String>> knownSecrets) {
     return TransportConfig.builder(url)
         .connectTimeout(connectTimeout)
         .requestTimeout(requestTimeout)
@@ -155,8 +221,7 @@ public final class OpenBaoConfig {
         .userAgentSuffix(userAgentSuffix)
         .hooks(hooks)
         .logger(logger)
-        .knownSecrets(
-            () -> token == null || token.isCleared() ? List.of() : List.of(token.reveal()))
+        .knownSecrets(knownSecrets)
         .build();
   }
 
@@ -268,6 +333,51 @@ public final class OpenBaoConfig {
     return logger;
   }
 
+  /**
+   * Returns the namespace sent as {@code X-Vault-Namespace}.
+   *
+   * @return the namespace, or empty
+   */
+  public Optional<String> namespace() {
+    return Optional.ofNullable(namespace);
+  }
+
+  /**
+   * Returns the default KV mount (default {@code secret}).
+   *
+   * @return the mount
+   */
+  public String kvMount() {
+    return kvMount;
+  }
+
+  /**
+   * Returns the fixed KV version that skips auto-detection.
+   *
+   * @return 1 or 2, or empty for auto-detection per mount
+   */
+  public OptionalInt kvVersion() {
+    return kvVersion == null ? OptionalInt.empty() : OptionalInt.of(kvVersion);
+  }
+
+  /**
+   * Returns the base path of {@code client.secrets()} inside the KV mount.
+   *
+   * @return the path without surrounding slashes ({@code ""} = the mount root)
+   */
+  public String secretsPath() {
+    return secretsPath;
+  }
+
+  /**
+   * Returns the KV data field that holds a {@code client.secrets()} value.
+   *
+   * @return the field (default {@code value})
+   */
+  public String valueField() {
+    return valueField;
+  }
+
   @Override
   public String toString() {
     return "OpenBaoConfig{url="
@@ -290,6 +400,16 @@ public final class OpenBaoConfig {
         + Redaction.redactHeaders(headers)
         + ", userAgentSuffix="
         + userAgentSuffix
+        + ", namespace="
+        + namespace
+        + ", kvMount="
+        + kvMount
+        + ", kvVersion="
+        + kvVersion
+        + ", secretsPath="
+        + secretsPath
+        + ", valueField="
+        + valueField
         + "}";
   }
 
@@ -312,6 +432,11 @@ public final class OpenBaoConfig {
     private String userAgentSuffix;
     private Hooks hooks;
     private Logger logger;
+    private String namespace;
+    private String kvMount;
+    private Integer kvVersion;
+    private String secretsPath;
+    private String valueField;
 
     private Builder() {}
 
@@ -349,14 +474,91 @@ public final class OpenBaoConfig {
       if (tls == null) {
         TlsOptions.Builder t = TlsOptions.builder();
         env.string("CA_CERT", CA_CERT_VENDOR_VARS).ifPresent(p -> t.caCertPath(Paths.get(p)));
-        env.string("CLIENT_CERT").ifPresent(p -> t.clientCertPath(Paths.get(p)));
-        env.string("CLIENT_KEY").ifPresent(p -> t.clientKeyPath(Paths.get(p)));
-        env.bool("INSECURE_SKIP_VERIFY").ifPresent(t::insecureSkipVerify);
+        env.string("CLIENT_CERT", CLIENT_CERT_VENDOR_VARS)
+            .ifPresent(p -> t.clientCertPath(Paths.get(p)));
+        env.string("CLIENT_KEY", CLIENT_KEY_VENDOR_VARS)
+            .ifPresent(p -> t.clientKeyPath(Paths.get(p)));
+        env.bool("INSECURE_SKIP_VERIFY", SKIP_VERIFY_VENDOR_VARS).ifPresent(t::insecureSkipVerify);
         tls = t.build();
       }
       if (proxy == null) {
         proxy = env.string("PROXY").orElse(null);
       }
+      if (namespace == null) {
+        namespace = env.string("NAMESPACE", NAMESPACE_VENDOR_VARS).orElse(null);
+      }
+      if (kvMount == null) {
+        kvMount = env.string("KV_MOUNT").orElse(null);
+      }
+      if (secretsPath == null) {
+        secretsPath = env.string("SECRETS_PATH").orElse(null);
+      }
+      if (kvVersion == null && env.integer("KV_VERSION").isPresent()) {
+        int v = env.integer("KV_VERSION").getAsInt();
+        if (v != 0 && v != 1 && v != 2) {
+          String variable = EnvReader.DEFAULT_PREFIX + "KV_VERSION";
+          throw new ConfigException("config: invalid value in " + variable + " (expected 1 or 2)");
+        }
+        kvVersion = v == 0 ? null : v;
+      }
+      return this;
+    }
+
+    /**
+     * Sets the base path inside the KV mount under which {@code client.secrets()} stores secrets
+     * (env {@code GROW_OPENBAO_SECRETS_PATH}, default {@code ""} = the mount root).
+     *
+     * @param secretsPath base path
+     * @return this builder
+     */
+    public Builder secretsPath(String secretsPath) {
+      this.secretsPath = secretsPath;
+      return this;
+    }
+
+    /**
+     * Sets the KV data field that holds a {@code client.secrets()} value (default {@code value}).
+     *
+     * @param valueField field name
+     * @return this builder
+     */
+    public Builder valueField(String valueField) {
+      this.valueField = valueField;
+      return this;
+    }
+
+    /**
+     * Sets the namespace sent as {@code X-Vault-Namespace} (env {@code GROW_OPENBAO_NAMESPACE},
+     * {@code BAO_NAMESPACE}, {@code VAULT_NAMESPACE}).
+     *
+     * @param namespace namespace path, e.g. {@code team-a}
+     * @return this builder
+     */
+    public Builder namespace(String namespace) {
+      this.namespace = namespace;
+      return this;
+    }
+
+    /**
+     * Sets the default KV mount (default {@code secret}).
+     *
+     * @param kvMount mount path
+     * @return this builder
+     */
+    public Builder kvMount(String kvMount) {
+      this.kvMount = kvMount;
+      return this;
+    }
+
+    /**
+     * Fixes the KV version of every mount and skips auto-detection ({@code
+     * sys/internal/ui/mounts}); set it for tokens that cannot read the preflight endpoint.
+     *
+     * @param kvVersion 1 or 2
+     * @return this builder
+     */
+    public Builder kvVersion(int kvVersion) {
+      this.kvVersion = kvVersion;
       return this;
     }
 

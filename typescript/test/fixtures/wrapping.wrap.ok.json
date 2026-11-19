@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/sys/wrapping/wrap",
+    "headers": ["X-Vault-Wrap-TTL: 60s", "Content-Type: application/json"],
+    "body": {
+      "secret": "wrapped-f43633d7",
+      "n": 1
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMzIifQ=="
+    ],
+    "body": {
+      "request_id": "",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": {
+        "token": "<redacted>",
+        "accessor": "<redacted>",
+        "ttl": 60,
+        "creation_time": "2026-11-18T20:29:16.720401442Z",
+        "creation_path": "sys/wrapping/wrap"
+      },
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/pki/issue/sdk-test",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "common_name": "evil.example.com"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["common name evil.example.com not allowed by this role"]
+    }
+  }
+}

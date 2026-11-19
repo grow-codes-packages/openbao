@@ -1,0 +1,44 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/auth/jwt/login",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "role": "sdk-jwt",
+      "jwt": "<redacted>"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMzgifQ=="
+    ],
+    "body": {
+      "request_id": "24603e19-9b18-1109-937d-029366b93f26",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": null,
+      "wrap_info": null,
+      "warnings": null,
+      "auth": {
+        "client_token": "<redacted>",
+        "accessor": "<redacted>",
+        "policies": ["default", "sdk-app"],
+        "token_policies": ["default", "sdk-app"],
+        "metadata": {
+          "role": "sdk-jwt"
+        },
+        "lease_duration": 3600,
+        "renewable": true,
+        "entity_id": "635dc3f0-cad3-3d3e-7956-59916d99c1c6",
+        "token_type": "service",
+        "orphan": true,
+        "mfa_requirement": null,
+        "num_uses": 0
+      }
+    }
+  }
+}

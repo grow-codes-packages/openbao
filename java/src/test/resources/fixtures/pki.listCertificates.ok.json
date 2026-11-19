@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "LIST",
+    "path": "/v1/pki/certs",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxODcifQ=="
+    ],
+    "body": {
+      "request_id": "9c5a0b49-05e3-178e-a381-45a29c190c0f",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "keys": [
+          "1b:51:42:eb:c5:7c:6c:ad:fd:ec:85:5d:e7:c1:67:10:db:61:b1:34",
+          "1b:ad:4f:b7:3d:38:d4:f2:e0:f5:c3:22:07:d0:b0:aa:8c:a6:45:18",
+          "29:1f:d4:b5:1c:21:20:41:d5:3b:94:53:98:76:b0:68:8d:83:f7:59"
+        ]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

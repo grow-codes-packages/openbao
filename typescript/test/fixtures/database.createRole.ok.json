@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/database/roles/ro-f43633d7",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "db_name": "pg-f43633d7",
+      "creation_statements": [
+        "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+        "GRANT SELECT ON public.sdk_probe TO \"{{name}}\";"
+      ],
+      "default_ttl": "1h",
+      "max_ttl": "2h"
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNzIifQ=="
+    ],
+    "body": null
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "LIST",
+    "path": "/v1/transit/keys?limit=1",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjUifQ=="
+    ],
+    "body": {
+      "request_id": "ab177094-1d5d-3d88-2af8-bf87548a7b23",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "keys": [
+          "sdk-aes"
+        ]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

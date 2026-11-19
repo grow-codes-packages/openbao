@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "LIST",
+    "path": "/v1/auth/ar-f43633d7/role",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIyMTAifQ=="
+    ],
+    "body": {
+      "request_id": "5ae753d9-c213-79ca-b718-9b1d593e2958",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "keys": ["r1"]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

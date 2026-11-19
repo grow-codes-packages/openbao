@@ -1,0 +1,42 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/auth/token/lookup-self",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxMDgifQ=="
+    ],
+    "body": {
+      "request_id": "0d247c0b-75f8-c354-59d6-bba4587c3f09",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "accessor": "<redacted>",
+        "creation_time": 1795033713,
+        "creation_ttl": 0,
+        "display_name": "root",
+        "entity_id": "",
+        "expire_time": null,
+        "explicit_max_ttl": 0,
+        "id": "<redacted>",
+        "meta": null,
+        "num_uses": 0,
+        "orphan": true,
+        "path": "auth/token/root",
+        "policies": ["root"],
+        "ttl": 0,
+        "type": "service"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

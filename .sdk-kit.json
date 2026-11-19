@@ -105,7 +105,7 @@
     },
     {
       "path": "CONTRIBUTING.md",
-      "sha256": "94db022562a3fef9cfeefb35ae5d0cb23cb39123f843bf851a6a12c2e00ad5af",
+      "sha256": "8aba0205d56e660bebcc6e78e8737493d79a6900deb55f11e4c09ba7043141b3",
       "generated": true
     },
     {
@@ -189,6 +189,11 @@
       "generated": true
     },
     {
+      "path": "docker/Dockerfile.java",
+      "sha256": "9850f1cfd5faa9870a10f0d02667c132c138e49cbf89a7997e72205cd3738c81",
+      "generated": true
+    },
+    {
       "path": "docker/Dockerfile.python",
       "sha256": "339734412c8500adf4a64607200379893e0ddd9c3c4d5f0d7714066bfeaf32d3",
       "generated": true
@@ -230,7 +235,7 @@
     },
     {
       "path": "docker/harness/compose-run.sh",
-      "sha256": "bf58d1051c425cdc65a54604a21ef3487633e57b7d336ad56593e4614371e29a",
+      "sha256": "b90bc6be3181cee7e869bd06a3de32ece3d423fbeb46134d15acd2e98b9aae75",
       "generated": true
     },
     {
@@ -290,7 +295,7 @@
     },
     {
       "path": "docs/docker-testing.md",
-      "sha256": "88901843812d938a56695395e246e49fccd59ea9d916140cf0271ee1e3a7aa56",
+      "sha256": "5abcbd477d3b4008a97100c05f6aa4611790cc4c896643e0fef591c391b502bf",
       "generated": true
     },
     {
@@ -315,7 +320,7 @@
     },
     {
       "path": "docs/install.md",
-      "sha256": "dbdc1790f74510ede0ad4b3c70fc3888f0cd4ea1abd655dec9e4bce51b88d8c0",
+      "sha256": "043af5a3e79013343b5b1a2a9046e8cb12e1e7f25712de066c47c9823a20f8ea",
       "generated": true
     },
     {
@@ -356,6 +361,36 @@
     {
       "path": "examples/go/main.go",
       "sha256": "eb3ab2dfcf2b8450e6cc53ce15d354873e95ad357b8dd388ae11c8ba4389d17d",
+      "generated": false
+    },
+    {
+      "path": "examples/java/README.md",
+      "sha256": "3fc69a7ce430a4f2fcada5424b2428d2774f272e7c44d0705e336c1c17ffbed7",
+      "generated": false
+    },
+    {
+      "path": "examples/java/pom.xml",
+      "sha256": "1df2b2c7128813112ce8458bb656cae76f1b8a35349d98b3520b21eceb94f1fb",
+      "generated": false
+    },
+    {
+      "path": "examples/java/src/main/java/codes/grow/packages/openbao/examples/AsyncExample.java",
+      "sha256": "809474f57ec2ffdb5afca1e836faf7b69d21f9c795d1801586432b9461806f26",
+      "generated": false
+    },
+    {
+      "path": "examples/java/src/main/java/codes/grow/packages/openbao/examples/BasicExample.java",
+      "sha256": "20982f9784802fe5793ac6b63dcf30f817f69484ca648a38d653ce7999eb2dca",
+      "generated": false
+    },
+    {
+      "path": "examples/java/src/main/java/codes/grow/packages/openbao/examples/HooksAndLoggingExample.java",
+      "sha256": "015b174b848abf99661f49e94b5205c2305962bdec5d313424c9285a60557e6b",
+      "generated": false
+    },
+    {
+      "path": "examples/java/src/main/java/codes/grow/packages/openbao/examples/secrets/SecretsCacheExample.java",
+      "sha256": "2dd20c1716d82a13a7fe633ddef47aaabb84ec365736484a5016236dfdd3ed6d",
       "generated": false
     },
     {
@@ -565,7 +600,7 @@
     },
     {
       "path": "go/secrets_provider_test.go",
-      "sha256": "8e2f62b43d612b684f750c6d2dba9f85681dde01e3246d5297e17b2f1378f2e5",
+      "sha256": "fe269f285bdc37f639261d0fb8d2bbced6d5f0546a654a78b6ecbd532ba23e0c",
       "generated": true
     },
     {
@@ -595,7 +630,7 @@
     },
     {
       "path": "go/testkit/runner_test.go",
-      "sha256": "1fe8db67977b2630a389af25b9b88a8c00f3b5f426fb7a539dd965b94cbd1d21",
+      "sha256": "fcd0cb2fcdeb56ecb35a02c1233aa9deba2b8ef19d53191285417f8d801d9316",
       "generated": true
     },
     {
@@ -630,7 +665,27 @@
     },
     {
       "path": "java/Makefile",
-      "sha256": "20a1163fc749d4be518ab3a754fecd9f5c0df24aacbd423891b0c61b6c8c10d4",
+      "sha256": "cb0e7b278e7f0dd161179c46686a0b564ad42d9cf6314af571ed306a120fa0f8",
+      "generated": false
+    },
+    {
+      "path": "java/integration/.gitignore",
+      "sha256": "b53ee26e6ff1da219b0563333a76d2c9ec19eec713d6ee54e11a1edacb0e9f3d",
+      "generated": false
+    },
+    {
+      "path": "java/integration/pom.xml",
+      "sha256": "b343663fe357792d1b847d187a39093df61da8ecf987097c0e315353373c4f53",
+      "generated": true
+    },
+    {
+      "path": "java/integration/src/test/java/codes/grow/packages/openbao/integration/ConformanceTest.java",
+      "sha256": "d8ec5c75d85e5a1823c7013cf8bde11bf979bb4dfb1ec672caeec72d0a6a8986",
+      "generated": true
+    },
+    {
+      "path": "java/integration/src/test/java/codes/grow/packages/openbao/integration/Factories.java",
+      "sha256": "0c91d93cf961df205281aebf4e3618bc3488d8dfe3594cebd68ea6f658bf79b6",
       "generated": false
     },
     {
@@ -1030,7 +1085,7 @@
     },
     {
       "path": "python/Makefile",
-      "sha256": "f92b2f0e4829f80e49f7d92626ec87563ee17fe57db0032fae56058be20a20a4",
+      "sha256": "431327605926f385e681859284ffb5e1104a47ae542c2bb238614573f10d3ef1",
       "generated": false
     },
     {
@@ -1110,7 +1165,7 @@
     },
     {
       "path": "python/src/grow_openbao/_core/errors.py",
-      "sha256": "2616fd5bb31ca7c0cbeb82ee828271181c60269554b3d03579d3e75165dc768f",
+      "sha256": "6b58592193df8dd232a786576ff7da90ac69bd6831b4ac51747f1993ce3ef866",
       "generated": true
     },
     {
@@ -1274,8 +1329,18 @@
       "generated": false
     },
     {
+      "path": "python/tests/test_tools.py",
+      "sha256": "8c5122d6debebc54ab454de8a90f57aa3ec78834c491ac23a9edbab77938a177",
+      "generated": false
+    },
+    {
       "path": "python/tools/covergate.py",
       "sha256": "ef3e9d92158a21addf97f1b02a773ed3ec039b09d7fc6fcc20f055cb503d8aeb",
+      "generated": false
+    },
+    {
+      "path": "python/tools/licensecheck.py",
+      "sha256": "723cd178d92bc2fafe4ea94c14939ad105978c7daa6e5b4f59bbbb05116776a8",
       "generated": false
     },
     {
@@ -1310,7 +1375,7 @@
     },
     {
       "path": "rust/integration/Cargo.toml",
-      "sha256": "0adacd26fa392c70b5b3e77d40dcc16563667982b6b2a5a2d096970352813179",
+      "sha256": "324b2141d5949e8d999ef46dea41595cd281a651feef0fc0c9ef9afd2ddeea90",
       "generated": false
     },
     {
@@ -1555,7 +1620,7 @@
     },
     {
       "path": "typescript/.prettierignore",
-      "sha256": "213e9f826f00551adae35eba3e3877d93666f7626e3358d1392bcea95bdf3fdb",
+      "sha256": "9efdbd2b612283220544dd94371a8b8b09267226c6c57410062a1398d225eaf0",
       "generated": true
     },
     {

@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: {
     index: "src/index.ts",
-    "testing/index": "src/testing/index.ts",
+    "testing/index": "src/testing-entry.ts",
   },
   format: ["esm", "cjs"],
   outDir: "lib",
@@ -12,7 +12,8 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
+  // Shared chunks keep one copy of every class across "." and "./testing" (instanceof works).
+  splitting: true,
   treeshake: true,
   shims: true,
 });

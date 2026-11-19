@@ -1,0 +1,42 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/v1/secret/data/sdk/test/f43633d7/alpha",
+    "headers": [
+      "Content-Type: application/merge-patch+json"
+    ],
+    "body": {
+      "options": {
+        "cas": 1
+      },
+      "data": {
+        "b": "3",
+        "c": "4"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNDQifQ=="
+    ],
+    "body": {
+      "request_id": "00d98c76-6057-6c9b-9c8f-cbb400349479",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "created_time": "2026-11-18T20:28:55.106281563Z",
+        "custom_metadata": null,
+        "deletion_time": "",
+        "destroyed": false,
+        "version": 2
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

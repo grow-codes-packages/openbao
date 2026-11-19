@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/sign/sdk-rsa/sha2-256",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "input": "c2lnbi1tZQ==",
+      "signature_algorithm": "pkcs1v15"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjcifQ=="
+    ],
+    "body": {
+      "request_id": "900ccc7a-47f1-f900-fcca-d69a3f0b1243",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "key_version": 1,
+        "signature": "vault:v1:UbmBS6iAN3AyxTMmr+F4bO16Ra3HfzxE0QXPqYJNn3/rN1WdcT/GZ0cd8TU4pWuB05948KgmQRsGw/pdQZCjoGEz60QLZdrrJr5+ztalV/4BB76EE0/GYLHWbbLHIYhuIrBroyQc/GpGrOXECp0DXWhylgN2xnthbMo/HUVcA1yqaS+DN0gFZpo4HhI8R/qkM93pPN9ku+2sCpHdZk38T9uksOhK/XgbuwEcpwdnbdt/X8zjIu1gpaPi/urg+EofeDj7khTgwfLHp03Ky+4A1RfPgpsFb65g6BjsBxiTd+HzTfVXglZad8UBQKpeFUj8J5UkCi+4quJoIr6cPmkgPA=="
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

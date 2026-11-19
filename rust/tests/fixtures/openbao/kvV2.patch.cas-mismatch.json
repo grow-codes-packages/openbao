@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/v1/secret/data/sdk/test/f43633d7/alpha",
+    "headers": [
+      "Content-Type: application/merge-patch+json"
+    ],
+    "body": {
+      "options": {
+        "cas": 1
+      },
+      "data": {
+        "b": "stale"
+      }
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "check-and-set parameter did not match the current version"
+      ]
+    }
+  }
+}

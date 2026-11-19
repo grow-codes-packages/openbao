@@ -360,9 +360,9 @@ def test_context_resolve_and_close() -> None:
 
 
 def demo_server(server: MockServer) -> None:
-    server.defaults["/health"] = Reply(200, {"status": "ok"})
-    server.defaults["/v1/ping"] = Reply(200, {"pong": True})
-    server.defaults["/version"] = Reply(200, {"version": "1.0.0"})
+    health = {"initialized": True, "sealed": False, "standby": False, "version": "2.7.2"}
+    server.defaults["/v1/sys/health"] = Reply(200, health)
+    server.defaults["/v1/auth/token/lookup-self"] = Reply(200, {"data": {"id": "t-1234"}})
 
 
 @pytest.mark.parametrize("scenario_doc", r.pytest_params(categories=["core"]))

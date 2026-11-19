@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/secret/metadata/sdk/test/f43633d7/alpha",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "max_versions": 5,
+      "cas_required": false,
+      "delete_version_after": "720h",
+      "custom_metadata": {
+        "owner": "sdk",
+        "run": "f43633d7"
+      }
+    }
+  },
+  "response": {
+    "status": 204,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNDgifQ=="
+    ],
+    "body": null
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/v1/sys/leases/renew",
+    "headers": [
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX",
+      "increment": "100h"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNzYifQ=="
+    ],
+    "body": {
+      "request_id": "3641ff1a-10ab-1145-ce4f-bdf8f984da64",
+      "lease_id": "database/creds/ro-f43633d7/slfnH93TpXsaDIwwFrnzEYlX",
+      "renewable": true,
+      "lease_duration": 7200,
+      "data": null,
+      "wrap_info": null,
+      "warnings": [
+        "TTL of \"100h\" exceeded the effective max_ttl of \"2h\"; TTL value is capped accordingly"
+      ],
+      "auth": null
+    }
+  }
+}

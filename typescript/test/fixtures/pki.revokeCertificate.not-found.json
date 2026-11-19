@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/pki/revoke",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "serial_number": "ff:ff:ff:ff"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": ["Cache-Control: no-store", "Content-Type: application/json"],
+    "body": {
+      "errors": ["certificate with serial ff:ff:ff:ff not found."]
+    }
+  }
+}

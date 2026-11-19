@@ -1,7 +1,11 @@
-// Command example shows the basics of the OpenBao Go SDK: configuration
-// from the environment, health, an authenticated ping and error handling.
+// Command example shows the OpenBao Go SDK against a real server: health,
+// an authenticated ping, the SecretsProvider over KV v2, a KV v2 round trip,
+// transit encryption and response wrapping.
 //
 //	GROW_OPENBAO_URL=http://127.0.0.1:8200 GROW_OPENBAO_TOKEN=... go run .
+//
+// The token needs write access to secret/ (KV v2) and transit/ (the example
+// creates the transit key "example-go" if it is missing).
 package main
 
 import (
@@ -35,7 +39,7 @@ func run() error {
 			}
 		},
 	}
-	fmt.Println("config:", cfg) // credentials print as [REDACTED]
+	fmt.Println("config:", cfg) // the token prints as [REDACTED]
 
 	client, err := openbao.NewClient(cfg)
 	if err != nil {
@@ -43,7 +47,7 @@ func run() error {
 	}
 	defer func() { _ = client.Close() }()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	health, err := client.Health(ctx)
@@ -59,16 +63,67 @@ func run() error {
 	case err != nil:
 		return err
 	}
-	fmt.Println("ping:", latency)
-
 	version, err := client.ServerVersion(ctx)
-	switch {
-	case errors.Is(err, openbao.ErrUnsupported):
-		fmt.Println("server version: not exposed")
-	case err != nil:
+	if err != nil {
 		return err
-	default:
-		fmt.Println("server version:", version)
 	}
-	return nil
+	fmt.Printf("ping: %s, server version %s\n", latency, version)
+
+	// SecretsProvider over KV v2 (mount "secret", version auto-detected).
+	secrets := client.Secrets()
+	v, err := secrets.Set(ctx, "examples/go/db-password", "s3cr3t", &openbao.SetOptions{Tags: map[string]string{"app": "example"}})
+	if err != nil {
+		return err
+	}
+	value, err := secrets.Require(ctx, "examples/go/db-password", nil)
+	if err != nil {
+		return err
+	}
+	text, _ := value.Reveal()
+	fmt.Printf("secret version %s read back (%d chars), printed as %s\n", v, len(text), value)
+
+	// Native KV v2 with check-and-set.
+	kv := client.KVv2("secret")
+	md, err := kv.Write(ctx, "examples/go/config", map[string]any{"port": 5432}, nil)
+	if err != nil {
+		return err
+	}
+	if _, err := kv.Write(ctx, "examples/go/config", map[string]any{"port": 5433}, &openbao.KVWriteOptions{CAS: openbao.Ptr(md.Version)}); err != nil {
+		return err
+	}
+	if _, err := kv.Write(ctx, "examples/go/config", map[string]any{"port": 1}, &openbao.KVWriteOptions{CAS: openbao.Ptr(md.Version)}); errors.Is(err, openbao.ErrConflict) {
+		fmt.Println("stale check-and-set write rejected as CONFLICT")
+	}
+
+	// Transit: encryption as a service.
+	transit := client.Transit("transit")
+	if _, err := transit.CreateKey(ctx, "example-go", "aes256-gcm96", nil); err != nil {
+		return err
+	}
+	ct, err := transit.Encrypt(ctx, "example-go", []byte("hello"), nil)
+	if err != nil {
+		return err
+	}
+	pt, err := transit.Decrypt(ctx, "example-go", ct.Ciphertext, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("transit: %s -> %q\n", ct.Ciphertext[:12]+"...", pt)
+
+	// Response wrapping: hand a secret over with a single-use token.
+	wrapped, err := client.Wrapping().Wrap(ctx, map[string]any{"api_key": "abc"}, time.Minute)
+	if err != nil {
+		return err
+	}
+	unwrapped, err := client.Wrapping().Unwrap(ctx, wrapped.Token.Reveal())
+	if err != nil {
+		return err
+	}
+	fmt.Printf("unwrapped %d field(s) with a token printed as %s\n", len(unwrapped.Data), wrapped.Token)
+
+	// Clean up.
+	if err := secrets.Delete(ctx, "examples/go/db-password", &openbao.DeleteOptions{Permanent: true}); err != nil {
+		return err
+	}
+	return kv.DeleteMetadata(ctx, "examples/go/config")
 }

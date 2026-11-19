@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/transit/decrypt/sdk-f43633d7",
+    "headers": ["Content-Type: application/json"],
+    "body": {
+      "ciphertext": "vault:v1:5235Me5AzswhXGKGJJELxkbSRJ/1az7V2rJI5hC9QbYHPSaqfJxGWffKLCZqhbggDQ=="
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNjUifQ=="
+    ],
+    "body": {
+      "request_id": "e62f6094-41e1-5c93-b0d2-87610754b501",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "plaintext": "Z3JvdwD/YmluYXJ5LWY0MzYzM2Q3"
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}

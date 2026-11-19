@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "DELETE",
+    "path": "/v1/transit/keys/sdk-f43633d7",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 400,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json"
+    ],
+    "body": {
+      "errors": [
+        "error deleting policy sdk-f43633d7: deletion is not allowed for this key"
+      ]
+    }
+  }
+}

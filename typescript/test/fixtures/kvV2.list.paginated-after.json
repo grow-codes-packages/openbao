@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "LIST",
+    "path": "/v1/secret/metadata/sdk/test/f43633d7?after=beta&limit=2",
+    "headers": [],
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": [
+      "Cache-Control: no-store",
+      "Content-Type: application/json",
+      "X-Vault-Index: eyJjbHVzdGVyIjoiMGNhOTMxYjQtNzYzYS05OTBhLTc5MTctOTY1YTc0YTM3YzQzIiwidmFsdWUiOiIxNDcifQ=="
+    ],
+    "body": {
+      "request_id": "3021d15e-c9a1-478b-56c4-5b88300e6dc0",
+      "lease_id": "",
+      "renewable": false,
+      "lease_duration": 0,
+      "data": {
+        "keys": ["dir/"]
+      },
+      "wrap_info": null,
+      "warnings": null,
+      "auth": null
+    }
+  }
+}
