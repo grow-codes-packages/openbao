@@ -28,10 +28,10 @@ Trademarks
 -------------------------------------------------------------------------------
 
 This project is an independent, community-maintained client library. It is not
-affiliated with, endorsed or sponsored by OpenBao a Series of LF Projects, LLC.
-OpenBao is a trademark of OpenBao a Series of LF Projects, LLC. All other product names, logos and
-brands are the property of their respective owners and are used for
-identification purposes only.
+affiliated with, endorsed or sponsored by the owner of OpenBao
+(OpenBao a Series of LF Projects, LLC). OpenBao is a trademark of its owner (OpenBao a Series of LF Projects, LLC);
+all other product names, logos and brands are the property of their respective
+owners and are used for identification purposes only.
 
 The OpenBao server itself is licensed separately by its owner:
 MPL-2.0 (Linux Foundation).
