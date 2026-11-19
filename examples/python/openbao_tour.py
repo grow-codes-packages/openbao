@@ -24,7 +24,7 @@ def kv_and_provider(client: sdk.OpenBaoClient) -> None:
     print("kv keys:", sorted(kv.read("examples/app").data))  # values stay out of logs
     secrets = client.secrets(path="examples")
     secrets.set("api-key", "k-123", tags={"owner": "examples"})
-    print("api-key exists:", secrets.exists("api-key"), secrets.get("api-key"))  # redacted
+    print("api-key exists:", secrets.exists("api-key"))  # the value itself never goes to stdout
     secrets.delete("api-key", permanent=True)
     kv.delete_metadata("examples/app")
 
