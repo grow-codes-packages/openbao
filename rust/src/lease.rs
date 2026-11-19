@@ -56,7 +56,7 @@ pub struct LeaseLookup {
     pub ttl: Duration,
 }
 
-/// Lease manager; get it with [`OpenBaoClient::lease_manager`]. Closing the client stops
+/// Lease manager; get it with [`OpenBaoClient::leases`]. Closing the client stops
 /// every managed lease (leases are not revoked).
 #[derive(Debug, Clone)]
 pub struct LeaseManager {

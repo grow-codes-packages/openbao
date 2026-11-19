@@ -34,7 +34,7 @@ const HEALTH_STATUSES: [u16; 5] = [429, 472, 473, 501, 503];
 /// Service modules hang off the client: [`auth`](Self::auth), [`kv`](Self::kv) /
 /// [`kv_v1`](Self::kv_v1) / [`kv_v2`](Self::kv_v2), [`secrets`](Self::secrets) (the
 /// `SecretsProvider` over KV), [`transit`](Self::transit), [`database`](Self::database),
-/// [`lease_manager`](Self::lease_manager), [`pki`](Self::pki), [`sys`](Self::sys) and
+/// [`leases`](Self::leases), [`pki`](Self::pki), [`sys`](Self::sys) and
 /// [`wrapping`](Self::wrapping). [`close`](Self::close) stops every token renewer, managed
 /// lease and secrets watcher started through the client.
 #[derive(Debug, Clone)]
