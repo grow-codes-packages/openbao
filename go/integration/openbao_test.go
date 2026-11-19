@@ -743,7 +743,7 @@ func TestDatabaseAndLeases(t *testing.T) {
 		t.Fatalf("read role %+v", r)
 	}
 	lease := get(db.GetCredentials(ctx, role)).of(t)
-	if lease.ID == "" || !lease.Renewable || lease.Duration != time.Hour || lease.Username == "" || lease.Password.IsZero() {
+	if lease.ID == "" || !lease.Renewable || !near(lease.Duration, time.Hour) || lease.Username == "" || lease.Password.IsZero() {
 		t.Fatalf("creds %+v", lease)
 	}
 	lm := c.Leases()
@@ -752,7 +752,7 @@ func TestDatabaseAndLeases(t *testing.T) {
 		t.Fatalf("lookup %+v", lk)
 	}
 	info := get(lm.Renew(ctx, lease.ID, 10*time.Minute)).of(t)
-	if info.Duration != 10*time.Minute || info.Capped() {
+	if !near(info.Duration, 10*time.Minute) || info.Capped() {
 		t.Fatalf("renew %+v", info)
 	}
 	if capped := get(lm.Renew(ctx, lease.ID, 100*time.Hour)).of(t); !capped.Capped() || capped.Duration > 2*time.Hour {
@@ -938,4 +938,10 @@ func TestTestingInitUnseal(t *testing.T) {
 		t.Fatal("seal")
 	}
 	_ = c
+}
+
+// near reports whether a lease duration the server computed is within a few seconds of want
+// (OpenBao counts from issue time, so a lease can come back as 59m59s instead of 1h).
+func near(got, want time.Duration) bool {
+	return got <= want && got >= want-5*time.Second
 }
