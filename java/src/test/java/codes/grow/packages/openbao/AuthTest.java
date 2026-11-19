@@ -314,7 +314,7 @@ class AuthTest {
     enqueue(server, "lookupSelf.revoked");
     assertThatThrownBy(
             () -> client.auth().startRenewer(RenewalOptions.builder().scheduler(clock).build()))
-        .isInstanceOf(PermissionDeniedException.class);
+        .isInstanceOf(AuthenticationException.class);
     assertThat(client.auth().activeRenewers()).isZero();
     // close() of the client stops renewers
     enqueue(server, "lookupSelf.ok");

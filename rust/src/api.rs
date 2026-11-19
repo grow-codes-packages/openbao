@@ -168,6 +168,17 @@ pub(crate) fn map_error(err: Error) -> Error {
     recode(&err, code)
 }
 
+/// Maps 400/401/403 from a login endpoint to `AUTHENTICATION`: the credentials were
+/// rejected (DECISIONS §7, the same in every language).
+pub(crate) fn login_error(err: Error) -> Error {
+    match err.http_status() {
+        Some(400 | 401 | 403) if err.code() != ErrorCode::Authentication => {
+            recode(&err, ErrorCode::Authentication)
+        }
+        _ => err,
+    }
+}
+
 /// A copy of `err` with another code (status, request id and `Retry-After` kept).
 pub(crate) fn recode(err: &Error, code: ErrorCode) -> Error {
     let mut out = Error::new(code, err.message());
@@ -541,6 +552,26 @@ mod tests {
             map_error(Error::from_status(405, "x")).code(),
             ErrorCode::Unsupported
         );
+        let login = login_error(Error::from_status(
+            400,
+            "x: invalid role or secret ID (HTTP 400)",
+        ));
+        assert_eq!(login.code(), ErrorCode::Authentication);
+        assert_eq!(login.http_status(), Some(400));
+        assert_eq!(
+            login_error(Error::from_status(401, "x")).code(),
+            ErrorCode::Authentication
+        );
+        let wrapped403 = login_error(Error::from_status(
+            403,
+            "x: permission denied: 1 error occurred: * permission denied (HTTP 403)",
+        ));
+        assert_eq!(wrapped403.code(), ErrorCode::Authentication);
+        assert_eq!(
+            login_error(Error::from_status(500, "x")).code(),
+            ErrorCode::Unavailable
+        );
+        assert_eq!(login_error(Error::timeout("t")).code(), ErrorCode::Timeout);
         let e501 = map_error(Error::from_status(501, "x"));
         assert_eq!(e501.code(), ErrorCode::Unavailable);
         assert!(e501.is_retryable());

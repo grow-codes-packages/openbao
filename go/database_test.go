@@ -88,7 +88,7 @@ func TestLeaseManager(t *testing.T) {
 		fixture("PUT", "/v1/sys/leases/lookup", "leases.lookup.ok").
 		fixture("PUT", "/v1/sys/leases/revoke-prefix/database/creds/ro", "leases.revokePrefix.ok")
 	c := newBao(t, m, nil)
-	lm := c.LeaseManager()
+	lm := c.Leases()
 	ctx := t.Context()
 	info, err := lm.Renew(ctx, "database/creds/ro/abc", 10*time.Minute)
 	if err != nil || info.Duration <= 0 || info.ID == "" || info.Capped() || m.last("PUT", "/v1/sys/leases/renew").JSON(t)["increment"] != "600s" {
@@ -116,7 +116,7 @@ func TestLeaseManager(t *testing.T) {
 			fixture("PUT", "/v1/sys/leases/renew", "leases.renew.capped").
 			fixture("PUT", "/v1/sys/leases/renew", "leases.renew.not-found").
 			fixture("PUT", "/v1/sys/leases/lookup", "leases.lookup.revoked")
-		lm := newBao(t, m, nil).LeaseManager()
+		lm := newBao(t, m, nil).Leases()
 		info, err := lm.Renew(t.Context(), "l1", 100*time.Hour)
 		if err != nil || !info.Capped() || info.Duration != 2*time.Hour {
 			t.Fatalf("capped %+v %v", info, err)
@@ -141,7 +141,7 @@ func TestManagedLease(t *testing.T) {
 		m := newMockBao(t).
 			json("PUT", "/v1/sys/leases/renew", 200, leaseReply(3600, true)).
 			json("PUT", "/v1/sys/leases/renew", 200, leaseReply(1800, true, `TTL of "100h" exceeded the effective max_ttl of "2h"; TTL value is capped accordingly`))
-		lm := newBao(t, m, nil).LeaseManager()
+		lm := newBao(t, m, nil).Leases()
 		var renews, expires int
 		ml := lm.Manage(lease(time.Hour, true), &ManageOptions{
 			Clock: newFakeClock(), OnRenew: func(*LeaseInfo) { renews++ }, OnExpire: func(*Lease) { expires++ },
@@ -153,7 +153,7 @@ func TestManagedLease(t *testing.T) {
 	})
 	t.Run("increment above grant counts as capped", func(t *testing.T) {
 		m := newMockBao(t).json("PUT", "/v1/sys/leases/renew", 200, leaseReply(60, true))
-		lm := newBao(t, m, nil).LeaseManager()
+		lm := newBao(t, m, nil).Leases()
 		expired := false
 		ml := lm.Manage(lease(time.Minute, true), &ManageOptions{Increment: time.Hour, Clock: newFakeClock(), OnExpire: func(*Lease) { expired = true }})
 		waitDone(t, ml.Done())
@@ -163,7 +163,7 @@ func TestManagedLease(t *testing.T) {
 	})
 	t.Run("rejected renewal expires", func(t *testing.T) {
 		m := newMockBao(t).errors("PUT", "/v1/sys/leases/renew", 400, "lease not found")
-		lm := newBao(t, m, nil).LeaseManager()
+		lm := newBao(t, m, nil).Leases()
 		var errs, expires int
 		ml := lm.Manage(lease(time.Minute, true), &ManageOptions{Clock: newFakeClock(), OnError: func(error) { errs++ }, OnExpire: func(*Lease) { expires++ }})
 		waitDone(t, ml.Done())
@@ -173,7 +173,7 @@ func TestManagedLease(t *testing.T) {
 	})
 	t.Run("retryable errors until expiry", func(t *testing.T) {
 		m := newMockBao(t).errors("PUT", "/v1/sys/leases/renew", 503, "sealed")
-		lm := newBao(t, m, nil).LeaseManager()
+		lm := newBao(t, m, nil).Leases()
 		var errs, expires int
 		ml := lm.Manage(lease(time.Minute, true), &ManageOptions{Clock: newFakeClock(), OnError: func(error) { errs++ }, OnExpire: func(*Lease) { expires++ }})
 		waitDone(t, ml.Done())
@@ -182,7 +182,7 @@ func TestManagedLease(t *testing.T) {
 		}
 	})
 	t.Run("not renewable waits for expiry", func(t *testing.T) {
-		lm := newBao(t, newMockBao(t), nil).LeaseManager()
+		lm := newBao(t, newMockBao(t), nil).Leases()
 		expired := false
 		l := lease(time.Minute, false)
 		l.IssuedAt = time.Now()
@@ -195,7 +195,7 @@ func TestManagedLease(t *testing.T) {
 	t.Run("stop, revoke and close", func(t *testing.T) {
 		m := newMockBao(t).noContent("PUT", "/v1/sys/leases/revoke")
 		c := newBao(t, m, nil)
-		lm := c.LeaseManager()
+		lm := c.Leases()
 		a := lm.Manage(lease(time.Minute, true), &ManageOptions{Clock: blockClock{}})
 		b := lm.Manage(lease(0, false), nil)
 		other := &Lease{ID: "other", Renewable: true, Duration: time.Minute}

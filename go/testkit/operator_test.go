@@ -78,80 +78,102 @@ func shamirServer(t *testing.T) *httptest.Server {
 func TestOperator(t *testing.T) {
 	ts := shamirServer(t)
 	ctx := t.Context()
-	if ok, err := InitStatus(ctx, ts.URL, nil); err != nil || ok {
-		t.Fatalf("init status %v %v", ok, err)
-	}
-	c, err := openbao.NewClient(openbao.Config{CommonConfig: openbao.CommonConfig{URL: ts.URL, Retry: &openbao.RetryPolicy{}}})
+	c, err := openbao.NewClient(openbao.Config{CommonConfig: openbao.CommonConfig{URL: ts.URL, Retry: &openbao.RetryPolicy{}}, Namespace: "ns"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() { _ = c.Close() }()
+	if ok, err := InitStatus(ctx, c, nil); err != nil || ok {
+		t.Fatalf("init status %v %v", ok, err)
+	}
 	if hs, _ := c.Health(ctx); hs.Status != "uninitialized" {
 		t.Fatalf("health before init %+v", hs)
 	}
-	res, err := Init(ctx, ts.URL, &InitOptions{SecretShares: 1, SecretThreshold: 1, OperatorOptions: OperatorOptions{Namespace: "ns"}})
+	res, err := Init(ctx, c, &InitOptions{SecretShares: 1, SecretThreshold: 1})
 	if err != nil || len(res.Keys) != 1 || res.Keys[0].Reveal() != "aa11" || res.RootToken.Reveal() != "root-tok-1" || len(res.KeysBase64) != 1 {
 		t.Fatalf("init %+v %v", res, err)
 	}
 	if strings.Contains(fmt.Sprintf("%+v", res), "root-tok-1") || strings.Contains(fmt.Sprintf("%v", res), "aa11") {
 		t.Fatal("init result must print redacted")
 	}
-	if _, err := Init(ctx, ts.URL, nil); !errors.Is(err, openbao.ErrValidation) {
+	if _, err := Init(ctx, c, nil); !errors.Is(err, openbao.ErrValidation) {
 		t.Fatalf("second init: %v", err)
 	}
 	if hs, _ := c.Health(ctx); hs.Status != "sealed" {
 		t.Fatalf("health sealed %+v", hs)
 	}
-	if _, err := Unseal(ctx, ts.URL, "zz", nil); !errors.Is(err, openbao.ErrValidation) {
+	if _, err := Unseal(ctx, c, "zz", nil); !errors.Is(err, openbao.ErrValidation) {
 		t.Fatalf("bad key: %v", err)
 	}
-	if _, err := Unseal(ctx, ts.URL, " ", nil); !errors.Is(err, openbao.ErrValidation) {
+	if _, err := Unseal(ctx, c, " ", nil); !errors.Is(err, openbao.ErrValidation) {
 		t.Fatalf("empty key: %v", err)
 	}
-	st, err := Unseal(ctx, ts.URL, res.Keys[0].Reveal(), &OperatorOptions{HTTPClient: http.DefaultClient})
+	st, err := Unseal(ctx, c, res.Keys[0].Reveal(), &OperatorOptions{HTTPClient: http.DefaultClient})
 	if err != nil || st.Sealed || st.T != 1 {
 		t.Fatalf("unseal %+v %v", st, err)
 	}
-	if hs, err := WaitForActive(ctx, c, 5*time.Second); err != nil || !hs.Healthy || hs.Status != "active" {
+	if hs, err := WaitForActive(ctx, c, 5*time.Second); err != nil || hs.State != "active" || !hs.Initialized {
 		t.Fatalf("active %+v %v", hs, err)
 	}
-	if err := Seal(ctx, ts.URL, "wrong", nil); !errors.Is(err, openbao.ErrAuthentication) && !errors.Is(err, openbao.ErrPermissionDenied) {
+	c.SetToken("wrong")
+	if err := Seal(ctx, c, nil); !errors.Is(err, openbao.ErrAuthentication) && !errors.Is(err, openbao.ErrPermissionDenied) {
 		t.Fatalf("seal wrong token: %v", err)
 	}
-	if err := Seal(ctx, ts.URL, res.RootToken.Reveal(), nil); err != nil {
+	c.SetToken(res.RootToken.Reveal())
+	if err := Seal(ctx, c, nil); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := WaitForActive(ctx, c, 300*time.Millisecond); !errors.Is(err, openbao.ErrTimeout) {
 		t.Fatalf("sealed never active: %v", err)
 	}
-	if ok, err := InitStatus(ctx, ts.URL, nil); err != nil || !ok {
+	if ok, err := InitStatus(ctx, c, nil); err != nil || !ok {
 		t.Fatal("initialized")
 	}
 
 	t.Run("recovery shares and transport errors", func(t *testing.T) {
 		ts := shamirServer(t)
-		res, err := Init(ctx, ts.URL, &InitOptions{RecoveryShares: 1})
+		client := func(url string) *openbao.Client {
+			cl, err := openbao.NewClient(openbao.Config{CommonConfig: openbao.CommonConfig{URL: url}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { _ = cl.Close() })
+			return cl
+		}
+		rc := client(ts.URL)
+		res, err := Init(ctx, rc, &InitOptions{RecoveryShares: 1})
 		if err != nil || len(res.RecoveryKeys) != 1 || len(res.Keys) != 0 {
 			t.Fatalf("recovery %+v %v", res, err)
 		}
-		if err := operatorCall(ctx, OperatorOptions{}, "GET", ts.URL, "sys/bad-json", "", nil, &map[string]any{}); !errors.Is(err, openbao.ErrUnavailable) {
+		if err := operatorCall(ctx, OperatorOptions{}, "GET", ts.URL, "", "sys/bad-json", "", nil, &map[string]any{}); !errors.Is(err, openbao.ErrUnavailable) {
 			t.Fatalf("bad json: %v", err)
 		}
-		if err := operatorCall(ctx, OperatorOptions{}, "GET", ts.URL, "sys/x", "", func() {}, nil); !errors.Is(err, openbao.ErrValidation) {
+		if err := operatorCall(ctx, OperatorOptions{}, "GET", ts.URL, "", "sys/x", "", func() {}, nil); !errors.Is(err, openbao.ErrValidation) {
 			t.Fatalf("bad body: %v", err)
 		}
-		if _, err := InitStatus(ctx, "http://bad host", nil); !errors.Is(err, openbao.ErrConfig) {
+		if err := operatorCall(ctx, OperatorOptions{}, "GET", "http://bad host", "", "sys/init", "", nil, nil); !errors.Is(err, openbao.ErrConfig) {
 			t.Fatalf("bad url: %v", err)
 		}
 		closed := httptest.NewServer(http.NotFoundHandler())
 		closed.Close()
-		if _, err := InitStatus(ctx, closed.URL, nil); !errors.Is(err, openbao.ErrUnavailable) {
+		if _, err := InitStatus(ctx, client(closed.URL), nil); !errors.Is(err, openbao.ErrUnavailable) {
 			t.Fatalf("closed: %v", err)
 		}
 		cctx, cancel := context.WithCancel(ctx)
 		cancel()
-		if _, err := InitStatus(cctx, ts.URL, nil); !errors.Is(err, openbao.ErrCancelled) {
+		if _, err := InitStatus(cctx, rc, nil); !errors.Is(err, openbao.ErrCancelled) {
 			t.Fatalf("cancelled: %v", err)
+		}
+		for name, call := range map[string]func() error{
+			"initStatus": func() error { _, err := InitStatus(ctx, nil, nil); return err },
+			"init":       func() error { _, err := Init(ctx, nil, nil); return err },
+			"unseal":     func() error { _, err := Unseal(ctx, nil, "k", nil); return err },
+			"seal":       func() error { return Seal(ctx, nil, nil) },
+			"wait":       func() error { _, err := WaitForActive(ctx, nil, time.Second); return err },
+		} {
+			if err := call(); !errors.Is(err, openbao.ErrConfig) {
+				t.Fatalf("%s without client: %v", name, err)
+			}
 		}
 	})
 }

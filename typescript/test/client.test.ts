@@ -147,6 +147,38 @@ describe("OpenBaoConfig", () => {
     expect(err?.message).toContain("GROW_OPENBAO_TOTAL_TIMEOUT");
     expect(err?.message).not.toContain("forever-and-secret");
   });
+
+  it("reads the KV settings of client.secrets() from the environment", async () => {
+    const c = OpenBaoConfig.fromEnv(
+      {},
+      {
+        GROW_OPENBAO_KV_MOUNT: "kv1",
+        GROW_OPENBAO_KV_VERSION: "1",
+        GROW_OPENBAO_SECRETS_PATH: "/apps/web/",
+      },
+    );
+    expect([c.kvMount, c.kvVersion, c.secretsPath, c.valueField]).toEqual([
+      "kv1",
+      1,
+      "apps/web",
+      "value",
+    ]);
+    expect(OpenBaoConfig.fromEnv({}, { GROW_OPENBAO_KV_VERSION: "0" }).kvVersion).toBeUndefined();
+    expect(OpenBaoConfig.fromEnv({ kvMount: "x" }, { GROW_OPENBAO_KV_MOUNT: "y" }).kvMount).toBe(
+      "x",
+    );
+    expect(() => OpenBaoConfig.fromEnv({}, { GROW_OPENBAO_KV_VERSION: "3" })).toThrow(
+      /GROW_OPENBAO_KV_VERSION/,
+    );
+    expect(() => new OpenBaoConfig({ valueField: " " })).toThrow(ConfigError);
+    const client = new OpenBaoClient(
+      new OpenBaoConfig({ url: "http://127.0.0.1:1", secretsPath: "base", valueField: "v" }),
+    );
+    const p = client.secrets();
+    expect([p.path, p.valueField]).toEqual(["base", "v"]);
+    expect(client.secrets({ path: "other", valueField: "w" }).path).toBe("other");
+    await client.close();
+  });
 });
 
 describe("OpenBaoClient basics", () => {
@@ -192,7 +224,7 @@ describe("OpenBaoClient basics", () => {
     expect(await c.health()).toMatchObject({ healthy: false, status: "unreachable" });
     expect(await c.health()).toMatchObject({
       healthy: false,
-      status: "unhealthy",
+      status: "unreachable",
       details: { httpStatus: "500" },
     });
   });

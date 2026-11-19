@@ -1,4 +1,4 @@
-//! System/admin module, response wrapping and the testing `operator` helpers.
+//! System/admin module, response wrapping and the `testing` lifecycle helpers.
 
 mod support;
 
@@ -482,7 +482,7 @@ async fn wrap_lookup_unwrap() {
 #[cfg(feature = "testing")]
 #[tokio::test]
 async fn operator_init_unseal_seal() {
-    use sdk::operator::{self, InitOptions};
+    use sdk::testing::{self, InitOptions};
     let server = MockServer::start().await;
     on(&server, "GET", "/v1/sys/init", "init.status").await;
     once(&server, "PUT", "/v1/sys/init", "init.shamir").await;
@@ -492,8 +492,8 @@ async fn operator_init_unseal_seal() {
     on(&server, "PUT", "/v1/sys/seal", "seal.testing").await;
     on(&server, "GET", "/v1/sys/health", "health.active").await;
     let c = client(&server);
-    assert!(!operator::init_status(&c).await.unwrap());
-    let init = operator::init(&c, &InitOptions::default()).await.unwrap();
+    assert!(!testing::init_status(&c).await.unwrap());
+    let init = testing::init(&c, &InitOptions::default()).await.unwrap();
     assert_eq!((init.keys.len(), init.keys_base64.len()), (1, 1));
     assert!(init.recovery_keys.is_empty() && init.recovery_keys_base64.is_empty());
     assert!(!init.root_token.is_empty());
@@ -502,7 +502,7 @@ async fn operator_init_unseal_seal() {
         sent(&server, "/v1/sys/init").await[0],
         json!({"secret_shares": 1, "secret_threshold": 1})
     );
-    let err = operator::init(
+    let err = testing::init(
         &c,
         &InitOptions {
             recovery_shares: Some(3),
@@ -517,27 +517,27 @@ async fn operator_init_unseal_seal() {
         sent(&server, "/v1/sys/init").await[1],
         json!({"recovery_shares": 3, "recovery_threshold": 1})
     );
-    let st = operator::unseal(&c, "abcd1234").await.unwrap();
+    let st = testing::unseal(&c, "abcd1234").await.unwrap();
     assert!(!st.sealed && st.initialized);
     assert_eq!(st.seal_type, "shamir");
     assert_eq!(
-        operator::unseal(&c, "zz").await.unwrap_err().code(),
+        testing::unseal(&c, "zz").await.unwrap_err().code(),
         ErrorCode::Validation
     );
     assert_eq!(
-        operator::unseal(&c, "").await.unwrap_err().code(),
+        testing::unseal(&c, "").await.unwrap_err().code(),
         ErrorCode::Validation
     );
-    let _ = operator::unseal_reset(&c).await;
+    let _ = testing::unseal_reset(&c).await;
     assert_eq!(
         sent(&server, "/v1/sys/unseal").await.last().unwrap(),
         &json!({"reset": true})
     );
-    operator::seal(&c).await.unwrap();
-    let h = operator::wait_for_active(&c, Duration::from_secs(5))
+    testing::seal(&c).await.unwrap();
+    let h = testing::wait_for_active(&c, Duration::from_secs(5))
         .await
         .unwrap();
-    assert!(h.healthy);
+    assert_eq!(h.state, "active");
 
     // never active: TIMEOUT; no root token: UNAVAILABLE
     let server = MockServer::start().await;
@@ -551,14 +551,14 @@ async fn operator_init_unseal_seal() {
     .await;
     let c = client(&server);
     assert_eq!(
-        operator::wait_for_active(&c, Duration::from_millis(300))
+        testing::wait_for_active(&c, Duration::from_millis(300))
             .await
             .unwrap_err()
             .code(),
         ErrorCode::Timeout
     );
     assert_eq!(
-        operator::init(&c, &InitOptions::default())
+        testing::init(&c, &InitOptions::default())
             .await
             .unwrap_err()
             .code(),

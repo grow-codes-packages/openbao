@@ -202,7 +202,10 @@ export class OpenBaoClient {
   secrets(options: OpenBaoSecretsOptions = {}): OpenBaoSecretsProvider {
     const provider: OpenBaoSecretsProvider = new OpenBaoSecretsProvider(
       this.kv(options.mount ?? this.config.kvMount),
-      options,
+      {
+        path: options.path ?? this.config.secretsPath,
+        valueField: options.valueField ?? this.config.valueField,
+      },
       () => this.#providers.delete(provider),
     );
     this.#providers.add(provider);
@@ -250,11 +253,12 @@ export class OpenBaoClient {
   /**
    * Unauthenticated health: `GET /v1/sys/health` (answers 200 in every node state). `healthy`
    * is `true` only for an active, unsealed node; `status` is `active`, `standby`,
-   * `perfstandby`, `sealed` or `uninitialized` (`unreachable`/`unhealthy` on errors). Never
-   * throws except for `CANCELLED` and `CONFIG`.
+   * `perfstandby`, `sealed` or `uninitialized` (`unreachable` on any error). `details` holds
+   * `version`, `initialized`, `sealed`, `standby` and `clusterName` (when set); on errors
+   * `error` (and `httpStatus`). Never throws except for `CANCELLED` and `CONFIG`.
    */
-  health(options: CallOptions = {}): Promise<HealthStatus> {
-    return probeHealth(async () => {
+  async health(options: CallOptions = {}): Promise<HealthStatus> {
+    const status = await probeHealth(async () => {
       const h = await this.sys.health(options);
       return healthStatus(
         h.state,
@@ -268,6 +272,8 @@ export class OpenBaoClient {
         h.state === "active",
       );
     });
+    // Any error is `unreachable` (DECISIONS §10: the status is a node state or `unreachable`).
+    return status.status === "unhealthy" ? { ...status, status: "unreachable" } : status;
   }
 
   /**

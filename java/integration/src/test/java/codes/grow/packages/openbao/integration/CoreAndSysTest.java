@@ -57,6 +57,9 @@ class CoreAndSysTest {
     try (OpenBaoClient bad =
         OpenBaoClient.builder().url(env.get("GROW_OPENBAO_URL")).token("not-a-real-token").build()) {
       assertThrows(AuthenticationException.class, bad::ping);
+      // an ordinary call with a bad token: plain "permission denied" 403 -> AUTHENTICATION
+      assertThrows(
+          AuthenticationException.class, () -> bad.kvV2("secret").read("sdk/allowed/hello"));
     }
   }
 

@@ -184,7 +184,8 @@ impl Auth {
                     .json(body)
                     .no_auth(),
             )
-            .await?;
+            .await
+            .map_err(api::login_error)?;
         let info = AuthInfo::from_value(&env.auth);
         if info.client_token.is_empty() {
             return Err(Error::new(
@@ -251,7 +252,7 @@ impl Auth {
 
     /// Looks up the current token and keeps it alive in the background (renews at 2/3 of
     /// the remaining TTL). Stop the renewer or close the client to end it.
-    pub async fn start_token_renewer(&self, opts: TokenRenewerOptions) -> Result<TokenRenewer> {
+    pub async fn start_renewer(&self, opts: TokenRenewerOptions) -> Result<TokenRenewer> {
         let info = self.lookup_self().await?;
         Ok(TokenRenewer::start(self.clone(), info, opts))
     }

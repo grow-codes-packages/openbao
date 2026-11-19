@@ -37,7 +37,7 @@
 //! ```
 //!
 //! Features: `blocking` (a blocking client), `testing` (in-memory fakes, the conformance
-//! runner and the [`operator`] init/unseal helpers).
+//! runner and the [`testing::init`] / [`testing::unseal`] server lifecycle helpers).
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub mod core;
@@ -60,13 +60,45 @@ mod wrapping;
 #[cfg_attr(docsrs, doc(cfg(feature = "blocking")))]
 pub mod blocking;
 
+// The generated test support (`src/testing/mod.rs`, owned by sdk-kit) is compiled as a
+// private module and re-exported together with the service-owned server lifecycle helpers
+// (`init`, `unseal`, `seal`, ...), so `grow_openbao::testing` matches the `testing` module of
+// the other four languages without editing the generated file.
 #[cfg(feature = "testing")]
-#[cfg_attr(docsrs, doc(cfg(feature = "testing")))]
-pub mod testing;
+#[path = "testing/mod.rs"]
+mod testing_generated;
 
 #[cfg(feature = "testing")]
+mod operator;
+
+/// Test support (feature `testing`): in-memory fakes, the conformance runner (SPEC §6) and
+/// the OpenBao server lifecycle helpers ([`testing::init`], [`testing::unseal`],
+/// [`testing::seal`], [`testing::init_status`], [`testing::wait_for_active`]) used by test
+/// fixtures and bootstrap scripts.
+///
+/// ```no_run
+/// # async fn demo() -> grow_openbao::Result<()> {
+/// use grow_openbao::testing::{self, InitOptions};
+/// use grow_openbao::{OpenBaoClient, OpenBaoConfig};
+///
+/// let client = OpenBaoClient::new(OpenBaoConfig::builder().url("http://openbao:8200").build()?)?;
+/// if !testing::init_status(&client).await? {
+///     let init = testing::init(&client, &InitOptions::default()).await?;
+///     testing::unseal(&client, init.keys[0].expose_secret()).await?;
+///     client.set_token(Some(init.root_token.clone()));
+/// }
+/// testing::wait_for_active(&client, std::time::Duration::from_secs(30)).await?;
+/// # Ok(())
+/// # }
+/// ```
+#[cfg(feature = "testing")]
 #[cfg_attr(docsrs, doc(cfg(feature = "testing")))]
-pub mod operator;
+pub mod testing {
+    pub use crate::operator::{
+        init, init_status, seal, unseal, unseal_reset, wait_for_active, InitOptions, InitResult,
+    };
+    pub use crate::testing_generated::*;
+}
 
 pub mod secrets;
 
@@ -96,8 +128,8 @@ pub use crate::pki::{
 pub use crate::provider::{KvSecretsProvider, SecretsProviderOptions};
 pub use crate::renew::{OnExpire, OnRenew, OnRenewError, TokenRenewer, TokenRenewerOptions};
 pub use crate::sys::{
-    AppRoleOptions, LeaderStatus, MountInfo, MountOptions, Policy, SealStatus, SecretId,
-    SecretIdOptions, Sys,
+    AppRoleOptions, HealthResponse, LeaderStatus, MountInfo, MountOptions, Policy, SealStatus,
+    SecretId, SecretIdOptions, Sys,
 };
 pub use crate::transit::{
     CreateKeyOptions, DataKey, DataKeyOptions, EncryptOptions, HashOptions, HmacOptions,

@@ -23,7 +23,16 @@ import java.util.regex.Pattern;
 final class VaultHttp {
   private static final Pattern AUTH_403 =
       Pattern.compile(
-          "invalid token|token not found|missing client token", Pattern.CASE_INSENSITIVE);
+          "invalid token|token not found|missing client token|bad token", Pattern.CASE_INSENSITIVE);
+
+  /**
+   * Missing, invalid or revoked tokens get the plain {@code ["permission denied"]} body (or no
+   * error text); a policy denial uses the wrapped {@code "1 error occurred: * permission denied"}
+   * form.
+   */
+  private static final Pattern PLAIN_DENIED =
+      Pattern.compile(": permission denied \\(HTTP 403\\)$");
+
   private static final Pattern CAS_MISMATCH =
       Pattern.compile("check-and-set parameter did not match", Pattern.CASE_INSENSITIVE);
 
@@ -43,9 +52,11 @@ final class VaultHttp {
 
   /**
    * Applies the OpenBao status mapping on top of the SPEC defaults: login endpoints map 400/401/403
-   * to {@code AUTHENTICATION}; a 403 naming an invalid or missing token is {@code AUTHENTICATION}
-   * (other 403 stay {@code PERMISSION_DENIED}); a CAS mismatch (400) is {@code CONFLICT}; 405 is
-   * {@code UNSUPPORTED}; 501 (not initialised) is {@code UNAVAILABLE}.
+   * to {@code AUTHENTICATION}; a 403 with the plain "permission denied" body (missing, invalid or
+   * revoked token), no error text, or a message naming an invalid or missing token is {@code
+   * AUTHENTICATION}, while a policy denial ("1 error occurred: * permission denied") stays {@code
+   * PERMISSION_DENIED}; a CAS mismatch (400) is {@code CONFLICT}; 405 is {@code UNSUPPORTED}; 501
+   * (not initialised) is {@code UNAVAILABLE}.
    *
    * @param err the transport error
    * @param login whether the call was a login
@@ -60,7 +71,9 @@ final class VaultHttp {
     ErrorCode code = null;
     if (login && (status == 400 || status == 401 || status == 403)) {
       code = ErrorCode.AUTHENTICATION;
-    } else if (status == 403 && AUTH_403.matcher(msg).find()) {
+    } else if (status == 403
+        && (AUTH_403.matcher(msg).find()
+            || (PLAIN_DENIED.matcher(msg).find() && !msg.contains("error occurred")))) {
       code = ErrorCode.AUTHENTICATION;
     } else if (status == 400 && CAS_MISMATCH.matcher(msg).find()) {
       code = ErrorCode.CONFLICT;

@@ -58,7 +58,7 @@ with OpenBaoClient.from_env() as client:
 | System | `client.sys` | `health`, `seal_status`, `leader`, `version`, policies, secrets engines, auth methods, AppRole admin (`create_app_role`, `read_role_id`, `generate_secret_id` …) |
 | Wrapping | `client.wrapping` | `wrap`, `unwrap`, `lookup_wrapping` |
 | Secrets | `client.secrets(mount, path=…)` | the shared `SecretsProvider` (`get`, `set`, `list`, `delete`, `metadata`, `load_env`, `watch` …) |
-| Testing | `grow_openbao.testing.lifecycle` | `init`, `unseal`, `seal`, `init_status`, `wait_until_active` (+ `a…` async forms) |
+| Testing | `grow_openbao.testing.lifecycle` | `init`, `unseal`, `seal`, `init_status`, `wait_for_active` (+ `a…` async forms) |
 
 Durations are float seconds (`…_s` parameters, `timedelta` accepted); timestamps are aware UTC
 `datetime`s; tokens, keys and passwords are `Secret` values.

@@ -39,8 +39,8 @@ describe("Transit keys", () => {
     expect(Number(key.keys["1"])).toBeGreaterThan(0);
     expect((await t.createKey(K, { type: "aes256-gcm96" })).name).toBe(K);
     // an empty 204 answer falls back to readKey
-    const read = await t.createKey(K, {
-      type: "ed25519",
+    const read = await t.createKey(K, "ed25519", {
+      type: "rsa-2048", // the positional type wins
       exportable: true,
       derived: false,
       autoRotatePeriodMs: 3_600_000,

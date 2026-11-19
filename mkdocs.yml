@@ -75,6 +75,7 @@ plugins:
             show_signature_annotations: true
             filters: ["!^_"]
             heading_level: 3
+            force_inspection: true
 
 markdown_extensions:
   - admonition
@@ -117,7 +118,17 @@ nav:
   - Quickstart: quickstart.md
   - Configuration: configuration.md
   - Client: client.md
-  - Functions: functions.md
+  - Functions:
+      - Overview: functions.md
+      - Auth: functions/auth.md
+      - KV: functions/kv.md
+      - Secrets over KV: functions/secrets-provider.md
+      - Transit: functions/transit.md
+      - Database and leases: functions/database.md
+      - PKI: functions/pki.md
+      - System and admin: functions/system.md
+      - Response wrapping: functions/wrapping.md
+      - Testing helpers: functions/testing.md
   - Secrets: secrets.md
   - Error handling: errors.md
   - Hooks and logger: hooks.md

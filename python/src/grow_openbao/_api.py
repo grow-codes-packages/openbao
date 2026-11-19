@@ -105,7 +105,12 @@ Op = Generator[Instr, Any, T]
 
 # --------------------------------------------------------------------------- error mapping
 
-_AUTH_403 = re.compile(r"invalid token|token not found|missing client token", re.IGNORECASE)
+_AUTH_403 = re.compile(
+    r"invalid token|token not found|missing client token|bad token", re.IGNORECASE
+)
+#: Missing/invalid/revoked tokens get the plain ``["permission denied"]`` body (or no error text);
+#: a policy denial uses the wrapped ``"1 error occurred: * permission denied"`` form.
+_PLAIN_DENIED = re.compile(r": (?:permission denied|forbidden) \(HTTP 403\)$")
 _CAS_MISMATCH = re.compile(r"check-and-set parameter did not match", re.IGNORECASE)
 
 
@@ -113,8 +118,9 @@ def map_vault_error(err: ServiceError, login: bool = False) -> ServiceError:
     """Apply the OpenBao-specific status mapping on top of the SPEC defaults.
 
     * login endpoints: 400/401/403 → ``AUTHENTICATION``;
-    * 403 whose message names an invalid/missing token → ``AUTHENTICATION`` (other 403 →
-      ``PERMISSION_DENIED``);
+    * 403 with the plain "permission denied" body (missing, invalid or revoked token), no error
+      text, or a message naming an invalid/missing token → ``AUTHENTICATION``; a policy denial
+      ("1 error occurred: * permission denied") stays ``PERMISSION_DENIED``;
     * 400 "check-and-set parameter did not match" → ``CONFLICT``;
     * 405 (unsupported operation) → ``UNSUPPORTED``;
     * 501 (not initialised) → ``UNAVAILABLE``.
@@ -123,7 +129,16 @@ def map_vault_error(err: ServiceError, login: bool = False) -> ServiceError:
     if status is None:
         return err
     code: ErrorCode | None = None
-    if (login and status in (400, 401, 403)) or (status == 403 and _AUTH_403.search(err.message)):
+    plain_denied = (
+        status == 403
+        and _PLAIN_DENIED.search(err.message) is not None
+        and "error occurred" not in err.message
+    )
+    if (
+        (login and status in (400, 401, 403))
+        or (status == 403 and _AUTH_403.search(err.message))
+        or plain_denied
+    ):
         code = ErrorCode.AUTHENTICATION
     elif status == 400 and _CAS_MISMATCH.search(err.message):
         code = ErrorCode.CONFLICT

@@ -39,12 +39,17 @@ async fn client_surface() {
     assert!(h.healthy);
     assert_eq!(h.status, "active");
     assert_eq!(h.details["version"], "2.7.2");
-    assert_eq!(h.details["httpStatus"], "200");
     assert_eq!(h.details["sealed"], "false");
+    assert_eq!(h.details["initialized"], "true");
+    assert_eq!(h.details["standby"], "false");
+    assert!(!h.details.contains_key("httpStatus"));
     assert!(c.ping().await.unwrap() < Duration::from_secs(5));
     assert_eq!(c.server_version().await.unwrap(), "2.7.2");
     assert_eq!(c.sys().version().await.unwrap(), "2.7.2");
-    assert!(c.sys().health().await.unwrap().healthy);
+    let raw = c.sys().health().await.unwrap();
+    assert_eq!(raw.state, "active");
+    assert!(raw.initialized && !raw.sealed && !raw.standby && !raw.performance_standby);
+    assert_eq!(raw.version, "2.7.2");
     assert_eq!(c.config().token().unwrap().expose_secret(), TOKEN);
     assert!(format!("{c:?}").contains("[REDACTED]"));
     assert!(!format!("{c:?}").contains(TOKEN));
@@ -97,8 +102,20 @@ async fn client_health_variants() {
             "perfstandby",
             "473",
         ),
-        ("/e", ResponseTemplate::new(500), false, "unhealthy", "500"),
-        ("/f", ResponseTemplate::new(200), true, "active", "200"),
+        (
+            "/e",
+            ResponseTemplate::new(500),
+            false,
+            "unreachable",
+            "500",
+        ),
+        (
+            "/f",
+            ResponseTemplate::new(200),
+            false,
+            "unreachable",
+            "200",
+        ),
     ];
     for (prefix, r, healthy, word, code) in cases {
         on_reply(&server, "GET", &format!("{prefix}/v1/sys/health"), r).await;
@@ -111,9 +128,15 @@ async fn client_health_variants() {
         .unwrap();
         let h = c.health().await.unwrap();
         assert_eq!((h.healthy, h.status.as_str()), (healthy, word), "{prefix}");
-        assert_eq!(h.details["httpStatus"], code);
+        if word == "unreachable" {
+            assert_eq!(h.details["httpStatus"], code, "{prefix}");
+            assert!(h.details.contains_key("error"), "{prefix}");
+        } else {
+            assert!(!h.details.contains_key("httpStatus"), "{prefix}");
+            assert!(h.details.contains_key("initialized"), "{prefix}");
+        }
     }
-    // an unexpected HTTP error is unhealthy, not an error
+    // an unexpected HTTP error is unreachable, not an error
     on_reply(
         &server,
         "GET",
@@ -129,7 +152,7 @@ async fn client_health_variants() {
     )
     .unwrap();
     let h = c.health().await.unwrap();
-    assert_eq!((h.healthy, h.status.as_str()), (false, "unhealthy"));
+    assert_eq!((h.healthy, h.status.as_str()), (false, "unreachable"));
 }
 
 #[tokio::test]
@@ -496,7 +519,7 @@ async fn module_accessors_and_mounts() {
     assert!(format!("{:?}", c.auth()).contains("Auth"));
     assert!(format!("{:?}", c.sys()).contains("Sys"));
     assert!(format!("{:?}", c.wrapping()).contains("Wrapping"));
-    assert!(format!("{:?}", c.lease_manager()).contains("LeaseManager"));
+    assert!(format!("{:?}", c.leases()).contains("LeaseManager"));
     assert_eq!(c.auth().client().config().kv_mount(), "secret");
 }
 

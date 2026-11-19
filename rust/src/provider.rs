@@ -338,13 +338,13 @@ impl BaseSecretsProvider for KvSecretsProvider {
             return Ok(None);
         }
         let mut extra = std::collections::BTreeMap::new();
-        extra.insert("max_versions".into(), md.max_versions.to_string());
-        extra.insert("cas_required".into(), md.cas_required.to_string());
+        extra.insert("maxVersions".into(), md.max_versions.to_string());
+        extra.insert("casRequired".into(), md.cas_required.to_string());
         extra.insert(
-            "delete_version_after".into(),
+            "deleteVersionAfter".into(),
             format!("{}s", md.delete_version_after.as_secs()),
         );
-        extra.insert("oldest_version".into(), md.oldest_version.to_string());
+        extra.insert("oldestVersion".into(), md.oldest_version.to_string());
         Ok(Some(SecretMetadata {
             name,
             path,

@@ -44,8 +44,6 @@ from ._core import (
     ResourceRegistry,
     Secret,
     ServiceError,
-    TimeoutError,
-    UnavailableError,
     error_from_status,
     to_seconds,
 )
@@ -95,7 +93,8 @@ def _health_status(h: HealthResponse) -> HealthStatus:
 def _health_error(err: ServiceError) -> HealthStatus:
     if isinstance(err, (CancelledError, ConfigError)):
         raise err
-    word = "unreachable" if isinstance(err, (UnavailableError, TimeoutError)) else "unhealthy"
+    # Any error is ``unreachable`` (DECISIONS §10: the status is a node state or unreachable).
+    word = "unreachable"
     details = {"error": err.message}
     if err.http_status is not None:
         details["httpStatus"] = str(err.http_status)
@@ -281,11 +280,15 @@ class OpenBaoClient(_ClientBase):
         return Pki(self._runner, mount)
 
     def secrets(
-        self, mount: str | None = None, *, path: str = "", value_field: str = "value"
+        self, mount: str | None = None, *, path: str | None = None, value_field: str | None = None
     ) -> OpenBaoSecretsProvider:
-        """:class:`SecretsProvider` over a KV mount; ``close()`` stops its watchers."""
+        """:class:`SecretsProvider` over a KV mount (default ``config.kv_mount``) and base path
+        (default ``config.secrets_path``); ``close()`` stops its watchers."""
         return OpenBaoSecretsProvider(
-            self.kv(mount), path=path, value_field=value_field, owner=self._resources
+            self.kv(mount),
+            path=self.config.secrets_path if path is None else path,
+            value_field=self.config.value_field if value_field is None else value_field,
+            owner=self._resources,
         )
 
     def request(
@@ -311,8 +314,10 @@ class OpenBaoClient(_ClientBase):
         unreachable server.
 
         ``healthy`` is true only for an active, unsealed node; ``status`` is ``active``,
-        ``standby``, ``perfstandby``, ``sealed`` or ``uninitialized`` (``unreachable`` /
-        ``unhealthy`` on errors). Raises only :class:`CancelledError` and :class:`ConfigError`.
+        ``standby``, ``perfstandby``, ``sealed`` or ``uninitialized`` (``unreachable`` on any
+        error). ``details`` holds ``version``, ``initialized``, ``sealed``, ``standby`` and
+        ``clusterName`` (when set); on errors ``error`` (and ``httpStatus``). Raises only
+        :class:`CancelledError` and :class:`ConfigError`.
         """
         try:
             with self._maybe_cancel(cancel):
@@ -433,11 +438,14 @@ class AsyncOpenBaoClient(_ClientBase):
         return AsyncPki(self._runner, mount)
 
     def secrets(
-        self, mount: str | None = None, *, path: str = "", value_field: str = "value"
+        self, mount: str | None = None, *, path: str | None = None, value_field: str | None = None
     ) -> AsyncOpenBaoSecretsProvider:
         """See :meth:`OpenBaoClient.secrets`."""
         return AsyncOpenBaoSecretsProvider(
-            self.kv(mount), path=path, value_field=value_field, owner=self._resources
+            self.kv(mount),
+            path=self.config.secrets_path if path is None else path,
+            value_field=self.config.value_field if value_field is None else value_field,
+            owner=self._resources,
         )
 
     async def request(

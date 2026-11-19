@@ -54,7 +54,7 @@ async fn approle_login_sets_token() {
         .login(AppRoleAuth::new("role-1", "secret-id-123456").mount("/ar-1/"))
         .await
         .unwrap_err();
-    assert_eq!(err.code(), ErrorCode::Validation);
+    assert_eq!(err.code(), ErrorCode::Authentication);
     assert!(!err.message().contains("secret-id-123456"));
     // role id only (bind_secret_id = false) sends no secret id
     let _ = c.auth().login(AppRoleAuth::new("role-2", "")).await;
@@ -107,7 +107,7 @@ async fn userpass_jwt_and_errors() {
         .login(UserpassAuth::new("bad user", "pw-123456").mount("up2"))
         .await
         .unwrap_err();
-    assert_eq!(err.code(), ErrorCode::Validation);
+    assert_eq!(err.code(), ErrorCode::Authentication);
     assert!(err.message().contains("invalid username or password"));
     assert!(c.auth().login(UserpassAuth::new("", "x")).await.is_err());
 
@@ -433,7 +433,7 @@ async fn token_renewer_renews_then_expires() {
     let (r1, e1) = (renews.clone(), expired.clone());
     let renewer = c
         .auth()
-        .start_token_renewer(TokenRenewerOptions {
+        .start_renewer(TokenRenewerOptions {
             increment: None,
             on_renew: Some(Arc::new(move |_| {
                 r1.fetch_add(1, Ordering::SeqCst);
@@ -495,7 +495,7 @@ async fn token_renewer_capped_increment_errors_and_relogin() {
     let (errs, r1) = (errors.clone(), renews.clone());
     let renewer = c
         .auth()
-        .start_token_renewer(TokenRenewerOptions {
+        .start_renewer(TokenRenewerOptions {
             increment: Some(Duration::from_secs(60)),
             relogin: true,
             on_error: Some(Arc::new(move |e| errs.lock().unwrap().push(e.code()))),
@@ -551,7 +551,7 @@ async fn token_renewer_failed_relogin_expires_and_stop() {
     let e1 = expired.clone();
     let renewer = c
         .auth()
-        .start_token_renewer(TokenRenewerOptions {
+        .start_renewer(TokenRenewerOptions {
             relogin: true,
             on_expire: Some(Arc::new(move || {
                 e1.fetch_add(1, Ordering::SeqCst);
@@ -578,7 +578,7 @@ async fn token_renewer_failed_relogin_expires_and_stop() {
     let c = client(&server);
     let r = c
         .auth()
-        .start_token_renewer(TokenRenewerOptions::default())
+        .start_renewer(TokenRenewerOptions::default())
         .await
         .unwrap();
     assert!(format!("{:?}", TokenRenewerOptions::default()).contains("relogin"));
@@ -610,7 +610,7 @@ async fn token_renewer_failed_relogin_expires_and_stop() {
     let e1 = expired.clone();
     let r = c
         .auth()
-        .start_token_renewer(TokenRenewerOptions {
+        .start_renewer(TokenRenewerOptions {
             on_expire: Some(Arc::new(move || {
                 e1.fetch_add(1, Ordering::SeqCst);
             })),

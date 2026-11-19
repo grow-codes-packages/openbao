@@ -2,6 +2,7 @@ package openbao
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"strings"
@@ -97,13 +98,26 @@ func (a *Auth) LoginWith(ctx context.Context, path string, body map[string]any) 
 	}
 	env, err := a.c.call(ctx, apiRequest{method: http.MethodPost, path: "auth/" + strings.Trim(path, "/"), body: body, op: op, noAuth: true})
 	if err != nil {
-		return nil, err
+		return nil, loginError(err)
 	}
 	if env.Auth == nil || env.Auth.ClientToken == "" {
 		return nil, &Error{Code: ErrorCodeAuthentication, Message: op + ": the response carried no token"}
 	}
 	a.c.rememberSecret(env.Auth.ClientToken, env.Auth.Accessor)
 	return env.Auth.info(), nil
+}
+
+// loginError maps 400/401/403 from a login endpoint to AUTHENTICATION: the
+// credentials were rejected (DECISIONS §7, the same in every language).
+func loginError(err error) error {
+	var e *Error
+	if errors.As(err, &e) {
+		switch e.HTTPStatus {
+		case http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden:
+			e.Code, e.Retryable = ErrorCodeAuthentication, false
+		}
+	}
+	return err
 }
 
 // LookupSelf returns the current token's properties (GET auth/token/lookup-self).

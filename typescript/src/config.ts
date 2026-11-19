@@ -48,6 +48,13 @@ export interface OpenBaoConfigOptions extends CommonConfigOptions {
    * tokens that cannot read the mount preflight endpoint. Default: auto-detect per mount.
    */
   kvVersion?: KvVersion;
+  /**
+   * Base path inside the KV mount under which `client.secrets()` stores secrets (env
+   * `GROW_OPENBAO_SECRETS_PATH`, default `""` = the mount root).
+   */
+  secretsPath?: string;
+  /** KV data field that holds a `client.secrets()` value (default `"value"`). */
+  valueField?: string;
 }
 
 /**
@@ -79,6 +86,8 @@ export class OpenBaoConfig implements CommonConfig {
   static readonly ENV_PREFIX = "GROW_OPENBAO_";
   /** Default KV mount. */
   static readonly DEFAULT_KV_MOUNT = "secret";
+  /** Default KV data field of a `client.secrets()` value. */
+  static readonly DEFAULT_VALUE_FIELD = "value";
 
   /** Endpoint base URL. */
   readonly url: string;
@@ -110,6 +119,10 @@ export class OpenBaoConfig implements CommonConfig {
   readonly kvMount: string;
   /** Fixed KV version, or `undefined` for auto-detection. */
   readonly kvVersion?: KvVersion;
+  /** Base path of `client.secrets()` inside the KV mount (`""` = the mount root). */
+  readonly secretsPath: string;
+  /** KV data field of a `client.secrets()` value. */
+  readonly valueField: string;
 
   /** Applies defaults, validates (throws {@link ConfigError}) and freezes. */
   constructor(options: OpenBaoConfigOptions = {}) {
@@ -132,6 +145,8 @@ export class OpenBaoConfig implements CommonConfig {
     }
     this.kvMount = options.kvMount ?? OpenBaoConfig.DEFAULT_KV_MOUNT;
     if (options.kvVersion !== undefined) this.kvVersion = options.kvVersion;
+    this.secretsPath = (options.secretsPath ?? "").replace(/^\/+|\/+$/g, "");
+    this.valueField = options.valueField ?? OpenBaoConfig.DEFAULT_VALUE_FIELD;
     this.validate();
     Object.freeze(this);
   }
@@ -146,7 +161,8 @@ export class OpenBaoConfig implements CommonConfig {
    * Builds a config from the environment. Precedence: explicit `overrides` >
    * `GROW_OPENBAO_<NAME>` > vendor variables ({@link VENDOR_ENV}: `BAO_*`, then `VAULT_*`) >
    * defaults. Reads `URL`, `TOKEN`, `NAMESPACE`, `CA_CERT`, `CLIENT_CERT`, `CLIENT_KEY`,
-   * `INSECURE_SKIP_VERIFY`, `PROXY`, the timeouts and `MAX_RETRIES`.
+   * `INSECURE_SKIP_VERIFY`, `PROXY`, the timeouts, `MAX_RETRIES`, `KV_MOUNT`, `KV_VERSION`
+   * (`1`, `2`; `0` = auto-detect) and `SECRETS_PATH`.
    */
   static fromEnv(overrides: OpenBaoConfigOptions = {}, env: EnvMap = process.env): OpenBaoConfig {
     const reader = new EnvReader(OpenBaoConfig.ENV_PREFIX, env);
@@ -155,6 +171,19 @@ export class OpenBaoConfig implements CommonConfig {
     if (token !== undefined) fromEnv.token = token;
     const namespace = reader.string("NAMESPACE", VENDOR_ENV.namespace);
     if (namespace !== undefined) fromEnv.namespace = namespace;
+    const kvMount = reader.string("KV_MOUNT");
+    if (kvMount !== undefined) fromEnv.kvMount = kvMount;
+    const secretsPath = reader.string("SECRETS_PATH");
+    if (secretsPath !== undefined) fromEnv.secretsPath = secretsPath;
+    const kvVersion = reader.int("KV_VERSION");
+    if (kvVersion !== undefined && kvVersion !== 0) {
+      if (kvVersion !== 1 && kvVersion !== 2) {
+        throw new ConfigError(
+          `invalid value in environment variable ${OpenBaoConfig.ENV_PREFIX}KV_VERSION: expected 1 or 2`,
+        );
+      }
+      fromEnv.kvVersion = kvVersion;
+    }
     const merged = mergeOptions<OpenBaoConfigOptions>(fromEnv, overrides);
     return new OpenBaoConfig(merged);
   }
@@ -169,6 +198,8 @@ export class OpenBaoConfig implements CommonConfig {
     const kvVersion: unknown = this.kvVersion;
     if (kvVersion !== undefined && kvVersion !== 1 && kvVersion !== 2)
       throw new ConfigError("invalid configuration: kvVersion must be 1 or 2");
+    if (this.valueField.trim() === "")
+      throw new ConfigError("invalid configuration: valueField must not be empty");
   }
 
   /** Credential values to redact from error messages and logs. */

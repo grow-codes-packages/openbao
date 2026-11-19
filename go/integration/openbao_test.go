@@ -132,6 +132,9 @@ func TestClientSurface(t *testing.T) {
 	if strings.Contains(err.Error(), "not-a-real-token") {
 		t.Fatal("token leaked into the error")
 	}
+	// An ordinary call with a bad token: plain "permission denied" 403 → AUTHENTICATION.
+	_, err = bad.KVv2("secret").Read(ctx, "sdk/allowed/hello", nil)
+	wantErr(t, err, openbao.ErrAuthentication)
 	ok(t, bad.Close())
 	ok(t, bad.Close())
 	unreachable := get(openbao.NewClient(openbao.Config{CommonConfig: openbao.CommonConfig{URL: "http://127.0.0.1:1", ConnectTimeout: time.Second}})).of(t)
@@ -155,8 +158,8 @@ func TestSys(t *testing.T) {
 	if v := get(s.Version(ctx)).of(t); v != st.Version {
 		t.Fatalf("version %q vs %q", v, st.Version)
 	}
-	if hs := get(s.Health(ctx)).of(t); !hs.Healthy {
-		t.Fatal("health")
+	if hs := get(s.Health(ctx)).of(t); hs.State != "active" || hs.Version != st.Version {
+		t.Fatalf("sys health %+v", hs)
 	}
 
 	id := runID(t)
@@ -214,7 +217,7 @@ func TestSys(t *testing.T) {
 		t.Fatalf("login policies %v", info.Policies)
 	}
 	_, err = login.Auth().Login(ctx, &openbao.AppRoleAuth{RoleID: roleID, SecretID: sid.SecretID, Mount: authPath})
-	wantErr(t, err, openbao.ErrValidation) // single-use secret id is used up
+	wantErr(t, err, openbao.ErrAuthentication) // single-use secret id is used up (login 400 → AUTHENTICATION)
 	_, err = s.ReadRoleID(ctx, "missing", authPath)
 	wantErr(t, err, openbao.ErrNotFound)
 	ok(t, s.DeleteAppRole(ctx, "r1", authPath))
@@ -279,9 +282,9 @@ func TestAuth(t *testing.T) {
 	t.Run("login errors", func(t *testing.T) {
 		cl := newBare()
 		_, err := cl.Auth().Login(ctx, openbao.NewJWTAuth(env(t, "JWT_ROLE"), env(t, "JWT_EXPIRED")))
-		wantErr(t, err, openbao.ErrValidation)
+		wantErr(t, err, openbao.ErrAuthentication)
 		_, err = cl.Auth().Login(ctx, openbao.NewUserpassAuth(env(t, "USERPASS_USER"), "wrong-password"))
-		wantErr(t, err, openbao.ErrValidation)
+		wantErr(t, err, openbao.ErrAuthentication)
 		_, err = cl.Auth().Login(ctx, openbao.NewTokenAuth("not-a-token"))
 		wantErr(t, err, openbao.ErrAuthentication)
 	})
@@ -337,7 +340,7 @@ func TestAuth(t *testing.T) {
 		var mu sync.Mutex
 		renews := 0
 		expired := make(chan struct{})
-		r := get(cl.Auth().StartTokenRenewer(ctx, &openbao.TokenRenewerOptions{
+		r := get(cl.Auth().StartRenewer(ctx, &openbao.TokenRenewerOptions{
 			Increment: 3 * time.Second,
 			OnRenew:   func(*openbao.AuthInfo) { mu.Lock(); renews++; mu.Unlock() },
 			OnExpire:  func() { close(expired) },
@@ -743,7 +746,7 @@ func TestDatabaseAndLeases(t *testing.T) {
 	if lease.ID == "" || !lease.Renewable || lease.Duration != time.Hour || lease.Username == "" || lease.Password.IsZero() {
 		t.Fatalf("creds %+v", lease)
 	}
-	lm := c.LeaseManager()
+	lm := c.Leases()
 	lk := get(lm.Lookup(ctx, lease.ID)).of(t)
 	if lk.ID != lease.ID || !lk.Renewable || lk.TTL <= 0 {
 		t.Fatalf("lookup %+v", lk)
@@ -892,22 +895,22 @@ func TestTestingInitUnseal(t *testing.T) {
 	c := setup(t)
 	ctx := t.Context()
 	url := env(t, "SHAMIR_URL")
-	initialized := get(testkit.InitStatus(ctx, url, nil)).of(t)
+	sc := get(openbao.NewClient(openbao.Config{CommonConfig: openbao.CommonConfig{URL: url}})).of(t)
+	defer func() { _ = sc.Close() }()
+	initialized := get(testkit.InitStatus(ctx, sc, nil)).of(t)
 	if initialized {
 		t.Skip("the Shamir instance is already initialised (fresh per compose project)")
 	}
-	sc := get(openbao.NewClient(openbao.Config{CommonConfig: openbao.CommonConfig{URL: url}})).of(t)
-	defer func() { _ = sc.Close() }()
 	if hs := get(sc.Health(ctx)).of(t); hs.Status != "uninitialized" || hs.Healthy {
 		t.Fatalf("before init %+v", hs)
 	}
-	res := get(testkit.Init(ctx, url, &testkit.InitOptions{SecretShares: 1, SecretThreshold: 1})).of(t)
+	res := get(testkit.Init(ctx, sc, &testkit.InitOptions{SecretShares: 1, SecretThreshold: 1})).of(t)
 	if len(res.Keys) != 1 || res.RootToken.IsZero() {
 		t.Fatal("init result")
 	}
-	_, err := testkit.Init(ctx, url, nil)
+	_, err := testkit.Init(ctx, sc, nil)
 	wantErr(t, err, openbao.ErrValidation)
-	if !get(testkit.InitStatus(ctx, url, nil)).of(t) {
+	if !get(testkit.InitStatus(ctx, sc, nil)).of(t) {
 		t.Fatal("init status")
 	}
 	if hs := get(sc.Health(ctx)).of(t); hs.Status != "sealed" {
@@ -917,20 +920,20 @@ func TestTestingInitUnseal(t *testing.T) {
 	if !st.Sealed || st.T != 1 || st.Type != "shamir" {
 		t.Fatalf("seal status %+v", st)
 	}
-	_, err = testkit.Unseal(ctx, url, "not-a-key", nil)
+	_, err = testkit.Unseal(ctx, sc, "not-a-key", nil)
 	wantErr(t, err, openbao.ErrValidation)
-	us := get(testkit.Unseal(ctx, url, res.Keys[0].Reveal(), nil)).of(t)
+	us := get(testkit.Unseal(ctx, sc, res.Keys[0].Reveal(), nil)).of(t)
 	if us.Sealed {
 		t.Fatal("still sealed")
 	}
-	if hs := get(testkit.WaitForActive(ctx, sc, 30*time.Second)).of(t); hs.Status != "active" {
+	if hs := get(testkit.WaitForActive(ctx, sc, 30*time.Second)).of(t); hs.State != "active" {
 		t.Fatalf("active %+v", hs)
 	}
 	sc.SetToken(res.RootToken.Reveal())
 	if _, err := sc.Ping(ctx); err != nil {
 		t.Fatal(err)
 	}
-	ok(t, testkit.Seal(ctx, url, res.RootToken.Reveal(), nil))
+	ok(t, testkit.Seal(ctx, sc, nil))
 	if st := get(sc.Sys().SealStatus(ctx)).of(t); !st.Sealed {
 		t.Fatal("seal")
 	}

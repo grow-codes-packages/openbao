@@ -29,7 +29,7 @@ from .auth import (
     UserpassAuth,
 )
 from .client import AsyncOpenBaoClient, OpenBaoClient, RawResponse
-from .config import DEFAULT_KV_MOUNT, DEFAULT_URL, VENDOR_ENV, OpenBaoConfig
+from .config import DEFAULT_KV_MOUNT, DEFAULT_URL, DEFAULT_VALUE_FIELD, VENDOR_ENV, OpenBaoConfig
 from .database import AsyncDatabase, ConnectionInfo, Database, DatabaseCredentials, RoleInfo
 from .kv import (
     AsyncKvMount,
@@ -94,6 +94,7 @@ __all__ = [
     "OpenBaoConfig",
     "DEFAULT_URL",
     "DEFAULT_KV_MOUNT",
+    "DEFAULT_VALUE_FIELD",
     "VENDOR_ENV",
     # auth
     "Auth",

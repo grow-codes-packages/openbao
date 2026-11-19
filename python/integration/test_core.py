@@ -49,6 +49,12 @@ def test_bad_token_is_rejected(env: dict[str, str]) -> None:
         with pytest.raises(sdk.AuthenticationError) as info:
             c.ping()
         assert "definitely-wrong-token" not in str(info.value)
+    # An ordinary call with a bad token is AUTHENTICATION too (plain "permission denied" 403).
+    with sdk.OpenBaoClient(
+        sdk.OpenBaoConfig(url=env["GROW_OPENBAO_URL"], token="definitely-wrong-token")
+    ) as c:
+        with pytest.raises(sdk.AuthenticationError):
+            c.kv_v2().read("sdk/allowed/hello")
 
 
 @pytest.mark.parametrize("scenario", pytest_params(categories=["core"]))

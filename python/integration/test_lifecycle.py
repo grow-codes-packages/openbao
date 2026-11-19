@@ -29,7 +29,7 @@ def test_init_unseal_seal(env: dict[str, str]) -> None:
             lifecycle.unseal(c, "not-a-key!")
         status = lifecycle.unseal(c, result.keys[0])
         assert not status.sealed
-        assert lifecycle.wait_until_active(c, timeout_s=30).state == "active"
+        assert lifecycle.wait_for_active(c, timeout_s=30).state == "active"
         c.set_token(result.root_token)
         lifecycle.seal(c)
         assert c.sys.seal_status().sealed
@@ -42,7 +42,7 @@ def test_init_unseal_seal(env: dict[str, str]) -> None:
             reset = await lifecycle.aunseal(a, reset=True)
             assert reset.progress == 0
             assert not (await lifecycle.aunseal(a, result.keys_base64[0])).sealed
-            assert (await lifecycle.await_until_active(a, timeout_s=30)).state == "active"
+            assert (await lifecycle.await_for_active(a, timeout_s=30)).state == "active"
             await lifecycle.aseal(a)
             assert (await a.health()).status == "sealed"
             with pytest.raises(sdk.ValidationError):

@@ -110,11 +110,13 @@ class _Core:
         number: int | None = None
         if opts.version is not None:
             if version == 1:
-                raise UnsupportedError(f"secrets.get {name}: versions need a KV version 2 mount")
+                raise ValidationError(f"secrets.get {name}: versions need a KV version 2 mount")
             try:
                 number = int(opts.version)
             except ValueError:
-                raise ValidationError(f"secrets.get {name}: version must be an integer") from None
+                number = 0
+            if number <= 0:
+                raise ValidationError(f"secrets.get {name}: version must be a positive integer")
         reader = _v2_read if version == 2 else _v1_read
         secret = yield from _or_none(reader(self.kv, path, version=number))
         if secret is None:
@@ -145,7 +147,7 @@ class _Core:
             extra={
                 "maxVersions": str(meta.max_versions),
                 "casRequired": str(meta.cas_required).lower(),
-                "deleteVersionAfterS": f"{meta.delete_version_after_s:g}",
+                "deleteVersionAfter": f"{int(meta.delete_version_after_s)}s",
                 "oldestVersion": str(meta.oldest_version),
             },
         )

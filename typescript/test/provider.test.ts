@@ -92,6 +92,7 @@ describe("OpenBaoSecretsProvider on KV v2", () => {
     expect(meta?.extra).toMatchObject({
       maxVersions: "0",
       casRequired: "false",
+      deleteVersionAfter: "0s",
       oldestVersion: "0",
     });
     expect((await p.metadata("dir/c"))?.path).toBe("dir");

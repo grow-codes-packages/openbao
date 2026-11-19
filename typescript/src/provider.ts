@@ -28,9 +28,9 @@ import type { Kv, KvMetadata, KvMount } from "./kv.js";
 export interface OpenBaoSecretsOptions {
   /** KV mount (default `config.kvMount`, i.e. `secret`). */
   mount?: string;
-  /** Base path inside the mount that names are relative to (default `""`). */
+  /** Base path inside the mount that names are relative to (default `config.secretsPath`). */
   path?: string;
-  /** Data field that holds the value (default `"value"`). */
+  /** Data field that holds the value (default `config.valueField`, i.e. `"value"`). */
   valueField?: string;
 }
 
@@ -204,7 +204,7 @@ export class OpenBaoSecretsProvider extends BaseSecretsProvider {
       extra: {
         maxVersions: String(meta.maxVersions),
         casRequired: String(meta.casRequired),
-        deleteVersionAfterMs: String(meta.deleteVersionAfterMs),
+        deleteVersionAfter: `${Math.floor(meta.deleteVersionAfterMs / 1000)}s`,
         oldestVersion: String(meta.oldestVersion),
       },
     };

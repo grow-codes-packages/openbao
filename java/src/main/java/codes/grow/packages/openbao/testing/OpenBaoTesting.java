@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
  * try (OpenBaoClient c = OpenBaoClient.builder().url("http://openbao-shamir:8200").build()) {
  *   OpenBaoTesting.InitResult init = OpenBaoTesting.init(c, 1, 1);
  *   OpenBaoTesting.unseal(c, init.keys().get(0));
- *   OpenBaoTesting.waitUntilActive(c, Duration.ofSeconds(30));
+ *   OpenBaoTesting.waitForActive(c, Duration.ofSeconds(30));
  * }
  * }</pre>
  */
@@ -214,9 +214,9 @@ public final class OpenBaoTesting {
    * @throws codes.grow.packages.openbao.core.TimeoutException when it does not become active in
    *     time
    */
-  public static HealthResponse waitUntilActive(OpenBaoClient client, Duration timeout) {
+  public static HealthResponse waitForActive(OpenBaoClient client, Duration timeout) {
     return Poll.until(
-        "testing.waitUntilActive",
+        "testing.waitForActive",
         timeout,
         Duration.ofMillis(250),
         () -> {

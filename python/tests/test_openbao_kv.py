@@ -234,9 +234,14 @@ def test_cas_required_and_permission_errors() -> None:
         with pytest.raises(sdk.ValidationError):
             c.kv_v2().write("app/db", {})
         with pytest.raises(sdk.PermissionDeniedError):
+            c.kv_v2().read("app/db")  # policy denial (wrapped multierror)
+        with pytest.raises(sdk.AuthenticationError):
+            c.kv_v2().read("app/db")  # missing token: plain "permission denied"
+        with pytest.raises(sdk.AuthenticationError):
             c.kv_v2().read("app/db")
-        with pytest.raises(sdk.PermissionDeniedError):
-            c.kv_v2().read("app/db")
+    r = Router().on("GET", V2, err(403))
+    with client(r) as c, pytest.raises(sdk.AuthenticationError):
+        c.kv_v2().read("app/db")  # no error text
     r = Router().on("GET", V2, err(403, "invalid token"))
     with client(r) as c, pytest.raises(sdk.AuthenticationError):
         c.kv_v2().read("app/db")

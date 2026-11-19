@@ -26,7 +26,7 @@ use crate::transit::Transit;
 use crate::wrapping::Wrapping;
 
 /// `sys/health` statuses that describe a server state rather than a failure.
-const HEALTH_STATUSES: [u16; 6] = [429, 472, 473, 500, 501, 503];
+const HEALTH_STATUSES: [u16; 5] = [429, 472, 473, 501, 503];
 
 /// Async client for OpenBao. Cheap to clone (clones share one connection pool, the token
 /// and the background tasks).
@@ -119,8 +119,10 @@ impl OpenBaoClient {
 
     /// Unauthenticated health check (`GET sys/health`). Never fails for a sealed, standby,
     /// uninitialised or unreachable server: `status` is `active`, `standby`, `perfstandby`,
-    /// `sealed`, `uninitialized`, `unhealthy` or `unreachable`, and `healthy` is true only
-    /// for an active node (HTTP 200). Only `CANCELLED` and `CONFIG` are returned as errors.
+    /// `sealed`, `uninitialized` or `unreachable` (any transport or unexpected HTTP error),
+    /// and `healthy` is true only for an active node. `details` holds `version`,
+    /// `initialized`, `sealed`, `standby` and `clusterName` (when set); on errors `error`
+    /// (and `httpStatus`). Only `CANCELLED` and `CONFIG` are returned as errors.
     pub async fn health(&self) -> Result<HealthStatus> {
         let mut req = ApiRequest::get("sys/health", "health").no_auth();
         for status in HEALTH_STATUSES {
@@ -128,41 +130,57 @@ impl OpenBaoClient {
         }
         let resp = match self.send(req).await {
             Ok(resp) => resp,
-            Err(err) => return HealthStatus::from_error(err),
+            Err(err) => {
+                let message = err.message().to_owned();
+                let mut status = HealthStatus::from_error(err)?;
+                status.status = "unreachable".into();
+                status.details.entry("error".into()).or_insert(message);
+                return Ok(status);
+            }
         };
         let body: Value = resp.json().unwrap_or(Value::Null);
         let flag = |k: &str| body.get(k).and_then(Value::as_bool);
         let word = if flag("initialized") == Some(false) {
-            "uninitialized"
+            Some("uninitialized")
         } else if flag("sealed") == Some(true) {
-            "sealed"
+            Some("sealed")
         } else if flag("performance_standby") == Some(true) {
-            "perfstandby"
+            Some("perfstandby")
         } else if flag("standby") == Some(true) {
-            "standby"
-        } else if resp.status() == 200 {
-            "active"
+            Some("standby")
+        } else if flag("initialized") == Some(true) {
+            Some("active")
         } else {
-            "unhealthy"
+            None // not a sys/health body
         };
-        let mut status = if resp.status() == 200 {
+        let Some(word) = word else {
+            return Ok(HealthStatus::unhealthy("unreachable")
+                .with_detail(
+                    "error",
+                    format!(
+                        "health: unexpected sys/health response (HTTP {})",
+                        resp.status()
+                    ),
+                )
+                .with_detail("httpStatus", resp.status().to_string()));
+        };
+        let mut status = if word == "active" {
             HealthStatus::healthy(word)
         } else {
             HealthStatus::unhealthy(word)
+        };
+        for key in ["version", "initialized", "sealed", "standby"] {
+            let value = match body.get(key) {
+                Some(Value::Bool(b)) => b.to_string(),
+                Some(Value::String(s)) => s.clone(),
+                _ if key == "version" => String::new(),
+                _ => "false".into(),
+            };
+            status = status.with_detail(key, value);
         }
-        .with_detail("httpStatus", resp.status().to_string());
-        for key in [
-            "initialized",
-            "sealed",
-            "standby",
-            "performance_standby",
-            "version",
-            "cluster_name",
-            "cluster_id",
-        ] {
-            if body.get(key).is_some_and(|v| !v.is_null()) {
-                status = status.with_detail(key, api::s(&body, key));
-            }
+        let cluster = api::s(&body, "cluster_name");
+        if !cluster.is_empty() {
+            status = status.with_detail("clusterName", cluster);
         }
         Ok(status)
     }
@@ -232,7 +250,7 @@ impl OpenBaoClient {
     }
 
     /// Lease manager: renew, revoke, look up and auto-renew leases.
-    pub fn lease_manager(&self) -> LeaseManager {
+    pub fn leases(&self) -> LeaseManager {
         LeaseManager::new(self.clone())
     }
 

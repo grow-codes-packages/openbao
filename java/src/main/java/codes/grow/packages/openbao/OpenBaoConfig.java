@@ -35,8 +35,10 @@ import java.util.function.Supplier;
  * GROW_OPENBAO_CA_CERT} / {@code BAO_CACERT} / {@code VAULT_CACERT}, {@code
  * GROW_OPENBAO_CLIENT_CERT} / {@code BAO_CLIENT_CERT} / {@code VAULT_CLIENT_CERT}, {@code
  * GROW_OPENBAO_CLIENT_KEY} / {@code BAO_CLIENT_KEY} / {@code VAULT_CLIENT_KEY}, {@code
- * GROW_OPENBAO_INSECURE_SKIP_VERIFY} / {@code BAO_SKIP_VERIFY} / {@code VAULT_SKIP_VERIFY}, plus
- * {@code GROW_OPENBAO_PROXY}, the timeouts and {@code GROW_OPENBAO_MAX_RETRIES}.
+ * GROW_OPENBAO_INSECURE_SKIP_VERIFY} / {@code BAO_SKIP_VERIFY} / {@code VAULT_SKIP_VERIFY}, {@code
+ * GROW_OPENBAO_KV_MOUNT}, {@code GROW_OPENBAO_KV_VERSION} ({@code 1}, {@code 2}; {@code 0} =
+ * auto-detect), {@code GROW_OPENBAO_SECRETS_PATH}, plus {@code GROW_OPENBAO_PROXY}, the timeouts
+ * and {@code GROW_OPENBAO_MAX_RETRIES}.
  */
 public final class OpenBaoConfig {
   /** Default endpoint. */
@@ -44,6 +46,9 @@ public final class OpenBaoConfig {
 
   /** Default KV mount used by {@code client.kv()} and {@code client.secrets()}. */
   public static final String DEFAULT_KV_MOUNT = "secret";
+
+  /** Default KV data field that holds a {@code client.secrets()} value. */
+  public static final String DEFAULT_VALUE_FIELD = "value";
 
   /** Vendor variables read for {@code url} after the SDK variable {@code URL}, in order. */
   static final String[] URL_VENDOR_VARS = {"BAO_ADDR", "VAULT_ADDR"};
@@ -81,6 +86,8 @@ public final class OpenBaoConfig {
   private final String namespace;
   private final String kvMount;
   private final Integer kvVersion;
+  private final String secretsPath;
+  private final String valueField;
 
   private OpenBaoConfig(Builder b) {
     this.url = b.url != null ? b.url : DEFAULT_URL;
@@ -98,6 +105,8 @@ public final class OpenBaoConfig {
     this.namespace = b.namespace == null || b.namespace.isEmpty() ? null : b.namespace;
     this.kvMount = b.kvMount != null ? b.kvMount : DEFAULT_KV_MOUNT;
     this.kvVersion = b.kvVersion;
+    this.secretsPath = b.secretsPath == null ? "" : b.secretsPath.replaceAll("^/+|/+$", "");
+    this.valueField = b.valueField != null ? b.valueField : DEFAULT_VALUE_FIELD;
   }
 
   /**
@@ -161,6 +170,9 @@ public final class OpenBaoConfig {
     }
     if (kvVersion != null && kvVersion != 1 && kvVersion != 2) {
       throw new ConfigException("config: kvVersion must be 1 or 2");
+    }
+    if (valueField.trim().isEmpty()) {
+      throw new ConfigException("config: valueField must not be empty");
     }
     if (proxy != null) {
       try {
@@ -348,6 +360,24 @@ public final class OpenBaoConfig {
     return kvVersion == null ? OptionalInt.empty() : OptionalInt.of(kvVersion);
   }
 
+  /**
+   * Returns the base path of {@code client.secrets()} inside the KV mount.
+   *
+   * @return the path without surrounding slashes ({@code ""} = the mount root)
+   */
+  public String secretsPath() {
+    return secretsPath;
+  }
+
+  /**
+   * Returns the KV data field that holds a {@code client.secrets()} value.
+   *
+   * @return the field (default {@code value})
+   */
+  public String valueField() {
+    return valueField;
+  }
+
   @Override
   public String toString() {
     return "OpenBaoConfig{url="
@@ -376,6 +406,10 @@ public final class OpenBaoConfig {
         + kvMount
         + ", kvVersion="
         + kvVersion
+        + ", secretsPath="
+        + secretsPath
+        + ", valueField="
+        + valueField
         + "}";
   }
 
@@ -401,6 +435,8 @@ public final class OpenBaoConfig {
     private String namespace;
     private String kvMount;
     private Integer kvVersion;
+    private String secretsPath;
+    private String valueField;
 
     private Builder() {}
 
@@ -451,6 +487,43 @@ public final class OpenBaoConfig {
       if (namespace == null) {
         namespace = env.string("NAMESPACE", NAMESPACE_VENDOR_VARS).orElse(null);
       }
+      if (kvMount == null) {
+        kvMount = env.string("KV_MOUNT").orElse(null);
+      }
+      if (secretsPath == null) {
+        secretsPath = env.string("SECRETS_PATH").orElse(null);
+      }
+      if (kvVersion == null && env.integer("KV_VERSION").isPresent()) {
+        int v = env.integer("KV_VERSION").getAsInt();
+        if (v != 0 && v != 1 && v != 2) {
+          String variable = EnvReader.DEFAULT_PREFIX + "KV_VERSION";
+          throw new ConfigException("config: invalid value in " + variable + " (expected 1 or 2)");
+        }
+        kvVersion = v == 0 ? null : v;
+      }
+      return this;
+    }
+
+    /**
+     * Sets the base path inside the KV mount under which {@code client.secrets()} stores secrets
+     * (env {@code GROW_OPENBAO_SECRETS_PATH}, default {@code ""} = the mount root).
+     *
+     * @param secretsPath base path
+     * @return this builder
+     */
+    public Builder secretsPath(String secretsPath) {
+      this.secretsPath = secretsPath;
+      return this;
+    }
+
+    /**
+     * Sets the KV data field that holds a {@code client.secrets()} value (default {@code value}).
+     *
+     * @param valueField field name
+     * @return this builder
+     */
+    public Builder valueField(String valueField) {
+      this.valueField = valueField;
       return this;
     }
 

@@ -253,7 +253,9 @@ async fn list_metadata_and_get_all() {
     assert_eq!(a.versions, Some(1));
     assert_eq!(a.tags["owner"], "sdk");
     assert!(a.created_at.is_some() && a.updated_at.is_some());
-    assert_eq!(a.extra["cas_required"], "false");
+    assert_eq!(a.extra["casRequired"], "false");
+    assert!(a.extra["deleteVersionAfter"].ends_with('s'));
+    assert!(a.extra.contains_key("maxVersions") && a.extra.contains_key("oldestVersion"));
     assert_eq!(a.path, None);
     let sub = p.list(Some("/sub/")).await.unwrap();
     assert_eq!(sub[0].name, "sub/x");

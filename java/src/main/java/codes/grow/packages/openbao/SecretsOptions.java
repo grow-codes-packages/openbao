@@ -24,8 +24,8 @@ public final class SecretsOptions {
   /** Builder of {@link SecretsOptions}. */
   public static final class Builder {
     private String mount;
-    private String path = "";
-    private String valueField = "value";
+    private String path;
+    private String valueField;
 
     private Builder() {}
 
@@ -41,7 +41,8 @@ public final class SecretsOptions {
     }
 
     /**
-     * Sets the base path inside the mount that names are relative to (default {@code ""}).
+     * Sets the base path inside the mount that names are relative to (default {@link
+     * OpenBaoConfig#secretsPath()}).
      *
      * @param path base path
      * @return this builder
@@ -52,7 +53,7 @@ public final class SecretsOptions {
     }
 
     /**
-     * Sets the data field that holds the value (default {@code value}).
+     * Sets the data field that holds the value (default {@link OpenBaoConfig#valueField()}).
      *
      * @param valueField field name
      * @return this builder

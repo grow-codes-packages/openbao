@@ -53,6 +53,8 @@ class ProviderTest {
         .isEqualTo("s3cret");
     assertThatThrownBy(() -> p.get("db", GetOptions.builder().version("x").build()))
         .isInstanceOf(ValidationException.class);
+    assertThatThrownBy(() -> p.get("db", GetOptions.builder().version("0").build()))
+        .isInstanceOf(ValidationException.class);
     assertThatThrownBy(() -> p.set("db", "v", SetOptions.builder().cas(1).build()))
         .isInstanceOf(codes.grow.packages.openbao.core.ConflictException.class);
     // bytes and objects
@@ -79,7 +81,8 @@ class ProviderTest {
     assertThat(m.createdAt()).isPresent();
     assertThat(m.updatedAt()).isPresent();
     assertThat(m.extra())
-        .containsKeys("maxVersions", "casRequired", "deleteVersionAfterMs", "oldestVersion");
+        .containsKeys("maxVersions", "casRequired", "deleteVersionAfter", "oldestVersion");
+    assertThat(m.extra().get("deleteVersionAfter")).endsWith("s");
     assertThat(p.metadata("missing")).isEmpty();
 
     List<SecretMetadata> list = p.list("");
@@ -113,7 +116,7 @@ class ProviderTest {
     assertThat(p.get("a/one").get().reveal()).isEqualTo("1");
     assertThat(p.get("a/one").get().version()).isEmpty();
     assertThatThrownBy(() -> p.get("a/one", GetOptions.builder().version("1").build()))
-        .isInstanceOf(UnsupportedException.class);
+        .isInstanceOf(ValidationException.class);
     assertThatThrownBy(() -> p.set("a/one", "x", SetOptions.builder().cas(0).build()))
         .isInstanceOf(UnsupportedException.class);
     assertThatThrownBy(() -> p.set("a/one", "x", SetOptions.builder().tag("k", "v").build()))

@@ -140,14 +140,20 @@ public final class OpenBaoSecretsProvider extends BaseSecretsProvider {
     Integer version = null;
     if (opts.version().isPresent()) {
       if (engine instanceof KvV1) {
-        throw new UnsupportedException(
+        throw new ValidationException(
             "secrets.get " + name + ": versions need a KV version 2 mount");
       }
+      int parsed;
       try {
-        version = Integer.parseInt(opts.version().get());
+        parsed = Integer.parseInt(opts.version().get().trim());
       } catch (NumberFormatException e) {
-        throw new ValidationException("secrets.get " + name + ": version must be an integer");
+        parsed = 0;
       }
+      if (parsed <= 0) {
+        throw new ValidationException(
+            "secrets.get " + name + ": version must be a positive integer");
+      }
+      version = parsed;
     }
     Integer v = version;
     return orEmpty(() -> v == null ? engine.read(p) : engine.read(p, v))
@@ -213,9 +219,7 @@ public final class OpenBaoSecretsProvider extends BaseSecretsProvider {
                           .versions(m.versions().size())
                           .extra("maxVersions", String.valueOf(m.maxVersions()))
                           .extra("casRequired", String.valueOf(m.casRequired()))
-                          .extra(
-                              "deleteVersionAfterMs",
-                              String.valueOf(m.deleteVersionAfter().toMillis()))
+                          .extra("deleteVersionAfter", m.deleteVersionAfter().toSeconds() + "s")
                           .extra("oldestVersion", String.valueOf(m.oldestVersion()));
                   m.createdTime().ifPresent(b::createdAt);
                   m.updatedTime().ifPresent(b::updatedAt);

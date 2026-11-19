@@ -372,6 +372,43 @@ class OpenBaoClientTest {
   }
 
   @Test
+  void kvSettingsFromEnv() {
+    OpenBaoConfig c =
+        OpenBaoConfig.fromEnv(
+            Map.of(P + "KV_MOUNT", "kv1", P + "KV_VERSION", "1", P + "SECRETS_PATH", "/apps/web/"));
+    assertThat(c.kvMount()).isEqualTo("kv1");
+    assertThat(c.kvVersion()).hasValue(1);
+    assertThat(c.secretsPath()).isEqualTo("apps/web");
+    assertThat(c.valueField()).isEqualTo("value");
+    assertThat(c.toString()).contains("secretsPath=apps/web");
+    assertThat(OpenBaoConfig.fromEnv(Map.of(P + "KV_VERSION", "0")).kvVersion()).isEmpty();
+    assertThat(
+            OpenBaoConfig.builder()
+                .kvMount("x")
+                .fromEnv(EnvReader.of(Map.of(P + "KV_MOUNT", "y")))
+                .build()
+                .kvMount())
+        .isEqualTo("x");
+    Map<String, String> bad = Map.of(P + "KV_VERSION", "3");
+    assertThatThrownBy(() -> OpenBaoConfig.fromEnv(bad))
+        .isInstanceOf(ConfigException.class)
+        .hasMessageContaining(P + "KV_VERSION");
+    assertThatThrownBy(() -> OpenBaoConfig.builder().valueField(" ").build())
+        .isInstanceOf(ConfigException.class);
+    try (OpenBaoClient client =
+        OpenBaoClient.create(
+            OpenBaoConfig.builder()
+                .url("http://127.0.0.1:1")
+                .secretsPath("base")
+                .valueField("v")
+                .build())) {
+      assertThat(client.secrets().fullPath("a", null)).isEqualTo("base/a");
+      assertThat(client.secrets(SecretsOptions.builder().path("other").build()).fullPath("a", null))
+          .isEqualTo("other/a");
+    }
+  }
+
+  @Test
   void vendorVariables() {
     Map<String, String> env = new HashMap<>();
     env.put("BAO_ADDR", "http://bao:8200");

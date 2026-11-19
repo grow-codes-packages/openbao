@@ -22,12 +22,12 @@ __all__ = [
     "init",
     "unseal",
     "seal",
-    "wait_until_active",
+    "wait_for_active",
     "ainit_status",
     "ainit",
     "aunseal",
     "aseal",
-    "await_until_active",
+    "await_for_active",
 ]
 
 
@@ -168,7 +168,7 @@ def seal(client: OpenBaoClient) -> None:
     client._runner.run(_seal_op())
 
 
-def wait_until_active(
+def wait_for_active(
     client: OpenBaoClient, *, timeout_s: float = 30.0, interval_s: float = 0.25
 ) -> HealthResponse:
     """Poll ``sys/health`` until the node is active (:class:`TimeoutError` otherwise)."""
@@ -209,8 +209,8 @@ async def aseal(client: AsyncOpenBaoClient) -> None:
     await client._runner.run(_seal_op())
 
 
-async def await_until_active(
+async def await_for_active(
     client: AsyncOpenBaoClient, *, timeout_s: float = 30.0, interval_s: float = 0.25
 ) -> HealthResponse:
-    """Async :func:`wait_until_active`."""
+    """Async :func:`wait_for_active`."""
     return await client._runner.run(_wait_op(to_seconds(timeout_s), to_seconds(interval_s)))

@@ -12,16 +12,25 @@ import (
 	openbao "github.com/grow-codes-packages/openbao/go"
 )
 
-// This file holds the OpenBao operator helpers that only tests and fixtures
-// need: Init, Unseal, Seal and WaitForActive. They are deliberately not part
-// of the openbao package API.
+// This file holds the OpenBao server lifecycle helpers that only tests and
+// fixtures need: InitStatus, Init, Unseal, Seal and WaitForActive (the same
+// names and arguments as the testing module of the other four languages).
+// They are deliberately not part of the openbao package API. Each takes the
+// client whose URL, namespace and token (Seal) it uses.
 
-// OperatorOptions configure the operator helpers.
+// OperatorOptions configure the lifecycle helpers.
 type OperatorOptions struct {
 	// HTTPClient sends the requests (default: a client with a 30 s timeout).
 	HTTPClient *http.Client
-	// Namespace is sent as X-Vault-Namespace when set.
-	Namespace string
+}
+
+// target returns the base URL and namespace of client.
+func target(op string, client *openbao.Client) (string, string, error) {
+	if client == nil {
+		return "", "", openbao.ConfigError(op + ": client is required")
+	}
+	cfg := client.Config()
+	return cfg.URL, strings.Trim(cfg.Namespace, "/"), nil
 }
 
 // InitOptions configure Init. With a Shamir seal set SecretShares and
@@ -57,7 +66,7 @@ func secrets(values []string) []openbao.Secret {
 }
 
 // operatorCall sends one request to url+"/v1/"+path and decodes the JSON body into out.
-func operatorCall(ctx context.Context, opts OperatorOptions, method, baseURL, path, token string, body, out any) error {
+func operatorCall(ctx context.Context, opts OperatorOptions, method, baseURL, namespace, path, token string, body, out any) error {
 	op := "testing." + path
 	var reader io.Reader
 	if body != nil {
@@ -78,8 +87,8 @@ func operatorCall(ctx context.Context, opts OperatorOptions, method, baseURL, pa
 	if token != "" {
 		req.Header.Set("X-Vault-Token", token)
 	}
-	if opts.Namespace != "" {
-		req.Header.Set("X-Vault-Namespace", opts.Namespace)
+	if namespace != "" {
+		req.Header.Set("X-Vault-Namespace", namespace)
 	}
 	hc := opts.HTTPClient
 	if hc == nil {
@@ -111,7 +120,11 @@ func operatorCall(ctx context.Context, opts OperatorOptions, method, baseURL, pa
 
 // Init initialises a fresh server (PUT sys/init). A second call is a
 // VALIDATION error ("already initialized").
-func Init(ctx context.Context, baseURL string, opts *InitOptions) (*InitResult, error) {
+func Init(ctx context.Context, client *openbao.Client, opts *InitOptions) (*InitResult, error) {
+	baseURL, ns, err := target("testing.init", client)
+	if err != nil {
+		return nil, err
+	}
 	o := InitOptions{}
 	if opts != nil {
 		o = *opts
@@ -131,7 +144,7 @@ func Init(ctx context.Context, baseURL string, opts *InitOptions) (*InitResult, 
 		RecoveryKeys []string `json:"recovery_keys"`
 		RootToken    string   `json:"root_token"`
 	}
-	if err := operatorCall(ctx, o.OperatorOptions, http.MethodPut, baseURL, "sys/init", "", body, &d); err != nil {
+	if err := operatorCall(ctx, o.OperatorOptions, http.MethodPut, baseURL, ns, "sys/init", "", body, &d); err != nil {
 		return nil, err
 	}
 	return &InitResult{
@@ -141,11 +154,15 @@ func Init(ctx context.Context, baseURL string, opts *InitOptions) (*InitResult, 
 }
 
 // InitStatus reports whether the server is initialised (GET sys/init).
-func InitStatus(ctx context.Context, baseURL string, opts *OperatorOptions) (bool, error) {
+func InitStatus(ctx context.Context, client *openbao.Client, opts *OperatorOptions) (bool, error) {
+	baseURL, ns, err := target("testing.initStatus", client)
+	if err != nil {
+		return false, err
+	}
 	var d struct {
 		Initialized bool `json:"initialized"`
 	}
-	err := operatorCall(ctx, operatorOpts(opts), http.MethodGet, baseURL, "sys/init", "", nil, &d)
+	err = operatorCall(ctx, operatorOpts(opts), http.MethodGet, baseURL, ns, "sys/init", "", nil, &d)
 	return d.Initialized, err
 }
 
@@ -159,29 +176,44 @@ func operatorOpts(opts *OperatorOptions) OperatorOptions {
 // Unseal submits one unseal key share (hex or base64; PUT sys/unseal) and
 // returns the seal status; Sealed is false once the threshold is reached.
 // An invalid key is a VALIDATION error.
-func Unseal(ctx context.Context, baseURL, key string, opts *OperatorOptions) (*openbao.SealStatus, error) {
+func Unseal(ctx context.Context, client *openbao.Client, key string, opts *OperatorOptions) (*openbao.SealStatus, error) {
+	baseURL, ns, err := target("testing.unseal", client)
+	if err != nil {
+		return nil, err
+	}
 	if strings.TrimSpace(key) == "" {
 		return nil, openbao.ValidationError("testing.unseal", "key is required")
 	}
 	var st openbao.SealStatus
-	if err := operatorCall(ctx, operatorOpts(opts), http.MethodPut, baseURL, "sys/unseal", "", map[string]any{"key": key}, &st); err != nil {
+	if err := operatorCall(ctx, operatorOpts(opts), http.MethodPut, baseURL, ns, "sys/unseal", "", map[string]any{"key": key}, &st); err != nil {
 		return nil, err
 	}
 	return &st, nil
 }
 
-// Seal seals the server (PUT sys/seal; needs a root/sudo token).
-func Seal(ctx context.Context, baseURL, token string, opts *OperatorOptions) error {
-	return operatorCall(ctx, operatorOpts(opts), http.MethodPut, baseURL, "sys/seal", token, nil, nil)
+// Seal seals the server (PUT sys/seal) with the client token (needs a
+// root/sudo token).
+func Seal(ctx context.Context, client *openbao.Client, opts *OperatorOptions) error {
+	baseURL, ns, err := target("testing.seal", client)
+	if err != nil {
+		return err
+	}
+	return operatorCall(ctx, operatorOpts(opts), http.MethodPut, baseURL, ns, "sys/seal", client.Token().Reveal(), nil, nil)
 }
 
-// WaitForActive polls client.Health until the node is active (HTTP 200) or
-// timeout passes (TIMEOUT error). Use it after Unseal: leader election takes
-// a moment.
-func WaitForActive(ctx context.Context, client *openbao.Client, timeout time.Duration) (openbao.HealthStatus, error) {
+// WaitForActive polls client.Sys().Health until the node is active
+// (initialised, unsealed, leader) or timeout passes (TIMEOUT error). Use it
+// after Unseal: leader election takes a moment.
+func WaitForActive(ctx context.Context, client *openbao.Client, timeout time.Duration) (*openbao.HealthResponse, error) {
+	if client == nil {
+		return nil, openbao.ConfigError("testing.waitForActive: client is required")
+	}
 	return openbao.PollUntil(ctx, "testing.waitForActive", timeout, 200*time.Millisecond,
-		func(ctx context.Context) (openbao.HealthStatus, bool, error) {
-			hs, err := client.Health(ctx)
-			return hs, err == nil && hs.Healthy, err
+		func(ctx context.Context) (*openbao.HealthResponse, bool, error) {
+			h, err := client.Sys().Health(ctx) // retryable errors keep polling
+			if err != nil {
+				return nil, false, err
+			}
+			return h, h.State == "active", nil
 		})
 }

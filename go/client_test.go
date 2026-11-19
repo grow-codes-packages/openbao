@@ -119,6 +119,14 @@ func TestClientHealth(t *testing.T) {
 			if err != nil || hs.Status != tc.status || hs.Healthy != tc.healthy || hs.Details["version"] != "2.7.2" {
 				t.Fatalf("%+v %v", hs, err)
 			}
+			for _, k := range []string{"version", "initialized", "sealed", "standby"} {
+				if _, ok := hs.Details[k]; !ok {
+					t.Fatalf("detail %s missing: %v", k, hs.Details)
+				}
+			}
+			if len(hs.Details) > 5 {
+				t.Fatalf("unexpected details %v", hs.Details)
+			}
 			if m.last("GET", "/v1/sys/health").Header.Get("X-Vault-Token") != "" {
 				t.Fatal("health must not send the token")
 			}
@@ -130,7 +138,7 @@ func TestClientHealth(t *testing.T) {
 			json("GET", "/v1/sys/health", 473, map[string]any{"initialized": true, "sealed": false, "standby": true, "performance_standby": true}).
 			add("GET", "/v1/sys/health", reply{status: 502, body: []byte("bad gateway")})
 		c := newBao(t, m, nil)
-		for _, want := range []string{"standby", "perfstandby", "unhealthy"} {
+		for _, want := range []string{"standby", "perfstandby", "unreachable"} {
 			if hs, err := c.Health(t.Context()); err != nil || hs.Status != want || hs.Healthy {
 				t.Fatalf("want %s: %+v %v", want, hs, err)
 			}
@@ -163,8 +171,11 @@ func TestClientPingAndVersion(t *testing.T) {
 	if v, err := c.Sys().Version(t.Context()); err != nil || v != "2.7.2" {
 		t.Fatalf("sys version %q %v", v, err)
 	}
-	if hs, err := c.Sys().Health(t.Context()); err != nil || !hs.Healthy {
+	if hs, err := c.Sys().Health(t.Context()); err != nil || hs.State != "active" || hs.Version != "2.7.2" || !hs.Initialized || hs.Sealed {
 		t.Fatalf("sys health %+v %v", hs, err)
+	}
+	if q := m.last("GET", "/v1/sys/health").Query; !strings.Contains(q, "sealedcode=200") || !strings.Contains(q, "uninitcode=200") {
+		t.Fatalf("sys health query %v", q)
 	}
 
 	t.Run("invalid token is AUTHENTICATION", func(t *testing.T) {

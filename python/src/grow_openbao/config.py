@@ -8,13 +8,16 @@ from typing import Any, ClassVar, Literal, TypeVar
 
 from ._core import BaseConfig, ConfigError, EnvReader, Secret
 
-__all__ = ["DEFAULT_KV_MOUNT", "DEFAULT_URL", "OpenBaoConfig", "VENDOR_ENV"]
+__all__ = ["DEFAULT_KV_MOUNT", "DEFAULT_URL", "DEFAULT_VALUE_FIELD", "OpenBaoConfig", "VENDOR_ENV"]
 
 #: Default endpoint when neither the config nor the environment sets one.
 DEFAULT_URL = "http://127.0.0.1:8200"
 
 #: Default KV mount used by ``client.kv()`` and ``client.secrets()``.
 DEFAULT_KV_MOUNT = "secret"
+
+#: Default KV data field that holds a ``client.secrets()`` value.
+DEFAULT_VALUE_FIELD = "value"
 
 #: Vendor variables read after ``GROW_OPENBAO_*``, in order: the OpenBao (``BAO_*``) name first,
 #: then the HashiCorp Vault compatible (``VAULT_*``) name (DECISIONS.md #3).
@@ -48,11 +51,14 @@ class OpenBaoConfig(BaseConfig):
     * ``kv_mount`` — default KV mount of ``client.kv()`` / ``client.secrets()`` (``"secret"``).
     * ``kv_version`` — ``1`` or ``2`` to skip KV version auto-detection
       (``sys/internal/ui/mounts``) for tokens that cannot read it; ``None`` = auto-detect.
+    * ``secrets_path`` — base path inside the KV mount of ``client.secrets()`` (``""`` = root).
+    * ``value_field`` — KV data field that holds a ``client.secrets()`` value (``"value"``).
 
     Environment (``from_env``): ``GROW_OPENBAO_<NAME>`` first, then the vendor variables of
     :data:`VENDOR_ENV` (``BAO_*`` then ``VAULT_*``). Names: ``URL``, ``TOKEN``, ``NAMESPACE``,
     ``CONNECT_TIMEOUT``, ``REQUEST_TIMEOUT``, ``TOTAL_TIMEOUT``, ``MAX_RETRIES``, ``CA_CERT``,
-    ``CLIENT_CERT``, ``CLIENT_KEY``, ``INSECURE_SKIP_VERIFY``, ``PROXY``.
+    ``CLIENT_CERT``, ``CLIENT_KEY``, ``INSECURE_SKIP_VERIFY``, ``PROXY``, ``KV_MOUNT``,
+    ``KV_VERSION`` (``1``, ``2``; ``0`` = auto-detect) and ``SECRETS_PATH``.
     """
 
     ENV_VENDOR: ClassVar[Mapping[str, tuple[str, ...]]] = VENDOR_ENV
@@ -62,11 +68,15 @@ class OpenBaoConfig(BaseConfig):
     namespace: str | None = None
     kv_mount: str = DEFAULT_KV_MOUNT
     kv_version: Literal[1, 2] | None = None
+    secrets_path: str = ""
+    value_field: str = DEFAULT_VALUE_FIELD
 
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.namespace == "":
             object.__setattr__(self, "namespace", None)
+        if isinstance(self.secrets_path, str):
+            object.__setattr__(self, "secrets_path", self.secrets_path.strip("/"))
 
     @classmethod
     def _env_values(cls, reader: EnvReader) -> dict[str, Any]:
@@ -77,6 +87,19 @@ class OpenBaoConfig(BaseConfig):
         namespace = reader.string("NAMESPACE", cls.ENV_VENDOR.get("NAMESPACE", ()))
         if namespace is not None:
             values["namespace"] = namespace
+        kv_mount = reader.string("KV_MOUNT")
+        if kv_mount is not None:
+            values["kv_mount"] = kv_mount
+        secrets_path = reader.string("SECRETS_PATH")
+        if secrets_path is not None:
+            values["secrets_path"] = secrets_path
+        kv_version = reader.int("KV_VERSION")
+        if kv_version is not None and kv_version != 0:
+            if kv_version not in (1, 2):
+                raise ConfigError(
+                    f"config: invalid value in {reader.prefix}KV_VERSION (expected 1 or 2)"
+                )
+            values["kv_version"] = kv_version
         return values
 
     def validate(self: _C) -> _C:
@@ -88,4 +111,8 @@ class OpenBaoConfig(BaseConfig):
             raise ConfigError("config: kv_mount must not be empty")
         if self.kv_version not in (None, 1, 2):
             raise ConfigError("config: kv_version must be 1 or 2")
+        if not isinstance(self.secrets_path, str):
+            raise ConfigError("config: secrets_path must be a string")
+        if not isinstance(self.value_field, str) or not self.value_field.strip():
+            raise ConfigError("config: value_field must not be empty")
         return self

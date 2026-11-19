@@ -103,9 +103,9 @@ type TokenRenewer struct {
 	clock Clock
 }
 
-// StartTokenRenewer looks up the current token and starts renewing it in the
+// StartRenewer looks up the current token and starts renewing it in the
 // background. Stop the renewer (or Close the client) to end it.
-func (a *Auth) StartTokenRenewer(ctx context.Context, opts *TokenRenewerOptions) (*TokenRenewer, error) {
+func (a *Auth) StartRenewer(ctx context.Context, opts *TokenRenewerOptions) (*TokenRenewer, error) {
 	o := TokenRenewerOptions{}
 	if opts != nil {
 		o = *opts

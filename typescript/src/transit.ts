@@ -358,8 +358,17 @@ export class Transit {
     });
   }
 
-  /** Creates a key (idempotent: an existing key is returned unchanged). */
-  async createKey(name: string, options: CreateKeyOptions = {}): Promise<TransitKey> {
+  /**
+   * Creates a key (idempotent: an existing key is returned unchanged). `type` defaults to
+   * `aes256-gcm96`; it may also be given as `options.type` (positional wins).
+   */
+  async createKey(
+    name: string,
+    typeOrOptions?: TransitKeyType | CreateKeyOptions,
+    options: CreateKeyOptions = {},
+  ): Promise<TransitKey> {
+    if (typeof typeOrOptions === "object") options = typeOrOptions;
+    else if (typeOrOptions !== undefined) options = { ...options, type: typeOrOptions };
     const res = await this.#ctx.http.call<Record<string, unknown>>({
       method: "POST",
       path: this.#p("keys", this.#name(name, "createKey")),

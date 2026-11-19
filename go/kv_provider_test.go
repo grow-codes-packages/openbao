@@ -68,7 +68,7 @@ func TestKVSecretsProviderV2(t *testing.T) {
 	}
 	md, err := p.Metadata(ctx, "db/password", nil)
 	if err != nil || md.Version != "2" || md.Tags["team"] != "a" || md.Tags["description"] != "db" || md.Versions != 2 ||
-		md.Path != "db" || md.Name != "db/password" || md.Extra["max_versions"] != "0" || md.CreatedAt.IsZero() {
+		md.Path != "db" || md.Name != "db/password" || md.Extra["maxVersions"] != "0" || md.Extra["deleteVersionAfter"] != "0s" || md.CreatedAt.IsZero() {
 		t.Fatalf("metadata %+v %v", md, err)
 	}
 	// binary and JSON values

@@ -8,7 +8,7 @@ use serde_json::{json, Map, Value};
 
 use crate::api::{self, ApiRequest};
 use crate::client::OpenBaoClient;
-use crate::core::{HealthStatus, Result, Secret};
+use crate::core::{Result, Secret};
 
 /// Seal state (`seal_status` and the testing `unseal`).
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -57,6 +57,60 @@ impl SealStatus {
             storage_type: api::s(v, "storage_type"),
             cluster_name: api::s(v, "cluster_name"),
             cluster_id: api::s(v, "cluster_id"),
+        }
+    }
+}
+
+/// Typed `sys/health` answer of [`Sys::health`].
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct HealthResponse {
+    /// `active`, `standby`, `perfstandby`, `sealed` or `uninitialized`.
+    pub state: String,
+    /// Whether the server is initialised.
+    pub initialized: bool,
+    /// Whether the server is sealed.
+    pub sealed: bool,
+    /// Whether this node is a standby.
+    pub standby: bool,
+    /// Whether this node is a performance standby.
+    pub performance_standby: bool,
+    /// Server version.
+    pub version: String,
+    /// Cluster name.
+    pub cluster_name: String,
+    /// Cluster id.
+    pub cluster_id: String,
+    /// Server clock.
+    pub server_time: Option<SystemTime>,
+}
+
+impl HealthResponse {
+    pub(crate) fn from_value(v: &Value) -> Self {
+        let initialized = api::b(v, "initialized");
+        let sealed = api::b(v, "sealed");
+        let standby = api::b(v, "standby");
+        let performance_standby = api::b(v, "performance_standby");
+        let state = if !initialized {
+            "uninitialized"
+        } else if sealed {
+            "sealed"
+        } else if performance_standby {
+            "perfstandby"
+        } else if standby {
+            "standby"
+        } else {
+            "active"
+        };
+        HealthResponse {
+            state: state.to_owned(),
+            initialized,
+            sealed,
+            standby,
+            performance_standby,
+            version: api::s(v, "version"),
+            cluster_name: api::s(v, "cluster_name"),
+            cluster_id: api::s(v, "cluster_id"),
+            server_time: api::time(v, "server_time_utc"),
         }
     }
 }
@@ -227,9 +281,21 @@ impl Sys {
         Sys { client }
     }
 
-    /// Same as [`OpenBaoClient::health`].
-    pub async fn health(&self) -> Result<HealthStatus> {
-        self.client.health().await
+    /// Raw node state (`GET sys/health`, no token needed; a sealed, standby or
+    /// uninitialised node is no error). [`OpenBaoClient::health`] is the never-failing SPEC
+    /// health check built on the same endpoint.
+    pub async fn health(&self) -> Result<HealthResponse> {
+        let mut req = ApiRequest::get("sys/health", "sys.health").no_auth();
+        for code in [
+            "uninitcode",
+            "sealedcode",
+            "standbycode",
+            "performancestandbycode",
+        ] {
+            req = req.query(code, "200");
+        }
+        let resp = self.client.send(req).await?;
+        Ok(HealthResponse::from_value(&resp.json::<Value>()?))
     }
 
     /// Same as [`OpenBaoClient::server_version`].

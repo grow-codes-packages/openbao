@@ -126,8 +126,63 @@ export GROW_OPENBAO_TOKEN=...   # never commit real tokens
     }
     ```
 
+## Store and read a secret
+
+The `SecretsProvider` keeps one value per KV path (mount `secret`, KV v1/v2 detected
+automatically); `client.kv()` gives the raw KV engine.
+
+=== "TypeScript"
+
+    ```ts
+    const secrets = client.secrets();
+    await secrets.set("app/db-password", "s3cret");
+    const value = await secrets.require("app/db-password");
+    console.log(String(value), value.reveal().length); // SecretValue([REDACTED]) 6
+    ```
+
+=== "Rust"
+
+    ```rust
+    use grow_openbao::secrets::SecretsProvider;
+
+    let secrets = client.secrets();
+    secrets.set("app/db-password", "s3cret".into(), None).await?;
+    let value = secrets.require("app/db-password", None).await?;
+    println!("{value}"); // SecretValue([REDACTED])
+    ```
+
+=== "Go"
+
+    ```go
+    secrets := client.Secrets()
+    if _, err := secrets.Set(ctx, "app/db-password", "s3cret", nil); err != nil {
+        return err
+    }
+    value, err := secrets.Require(ctx, "app/db-password", nil)
+    fmt.Println(value) // SecretValue([REDACTED])
+    ```
+
+=== "Python"
+
+    ```python
+    secrets = client.secrets()
+    secrets.set("app/db-password", "s3cret")
+    value = secrets.require("app/db-password")
+    print(value, len(value.reveal()))  # SecretValue([REDACTED]) 6
+    ```
+
+=== "Java"
+
+    ```java
+    OpenBaoSecretsProvider secrets = client.secrets();
+    secrets.set("app/db-password", "s3cret");
+    SecretValue value = secrets.require("app/db-password");
+    System.out.println(value); // SecretValue([REDACTED])
+    ```
+
 ## Next steps
 
 - [Configuration](configuration.md): timeouts, retries, TLS, proxy, environment variables.
-- [Functions](functions.md): the OpenBao API of this SDK.
+- [Functions](functions.md): the OpenBao API of this SDK (auth, KV, transit, database
+  credentials, PKI, system, wrapping).
 - [Error handling](errors.md): error codes and retries.

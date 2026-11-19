@@ -76,6 +76,8 @@ def test_get_set_values_and_versions() -> None:
         assert r.last().query == {"version": "2"}
         with pytest.raises(sdk.ValidationError):
             p.get("plain", version="latest")
+        with pytest.raises(sdk.ValidationError):
+            p.get("plain", version="0")
         assert p.get("bin").reveal_bytes() == b"\xff"  # type: ignore[union-attr]
         with pytest.raises(sdk.ValidationError):
             p.get("badb64")
@@ -129,7 +131,7 @@ def test_list_get_all_metadata_v2() -> None:
         assert a.extra == {
             "maxVersions": "0",
             "casRequired": "false",
-            "deleteVersionAfterS": "0",
+            "deleteVersionAfter": "0s",
             "oldestVersion": "1",
         }
         values = p.get_all("app")
@@ -153,7 +155,7 @@ def test_list_and_metadata_v1() -> None:
         assert p.metadata("two") is None
         v = p.get("one")
         assert v is not None and v.version is None
-        with pytest.raises(sdk.UnsupportedError):
+        with pytest.raises(sdk.ValidationError):  # DECISIONS §9: provider + v1 + version
             p.get("one", version="1")
         with pytest.raises(sdk.UnsupportedError):
             p.set("one", "x", cas=0)
@@ -246,14 +248,14 @@ def test_lifecycle_sync() -> None:
             lifecycle.unseal(c)
         lifecycle.seal(c)
         assert r.last().headers["x-vault-token"]
-        h = lifecycle.wait_until_active(c, interval_s=0.001)
+        h = lifecycle.wait_for_active(c, interval_s=0.001)
         assert h.state == "active"
     r = Router().on("GET", "sys/health", "health.sealed")
     with client(r) as c, pytest.raises(sdk.TimeoutError):
-        lifecycle.wait_until_active(c, timeout_s=0.02, interval_s=0.005)
+        lifecycle.wait_for_active(c, timeout_s=0.02, interval_s=0.005)
     r = Router().on("GET", "sys/health", err(400, "bad"))
     with client(r) as c, pytest.raises(sdk.ValidationError):
-        lifecycle.wait_until_active(c)
+        lifecycle.wait_for_active(c)
 
 
 async def test_lifecycle_async() -> None:
@@ -270,7 +272,7 @@ async def test_lifecycle_async() -> None:
         assert not (await lifecycle.aunseal(c, reset=True)).sealed
         assert r.last().json == {"reset": True}
         await lifecycle.aseal(c)
-        assert (await lifecycle.await_until_active(c)).state == "active"
+        assert (await lifecycle.await_for_active(c)).state == "active"
 
 
 # --------------------------------------------------------------------------- helpers

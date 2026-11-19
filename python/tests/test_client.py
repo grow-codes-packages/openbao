@@ -91,7 +91,7 @@ def test_health_standby_and_errors() -> None:
         assert c.health().status == "unreachable"  # empty body is an unexpected response
     r = Router().on("GET", "sys/health", err(400, "bad"))
     with client(r) as c:
-        assert c.health().status == "unhealthy"
+        assert c.health().status == "unreachable"
     assert len([s for s in r.seen if s.path == HEALTH]) == 1  # health never retries
 
 
@@ -170,6 +170,34 @@ def test_core_close_idempotent() -> None:
     assert stopped == [1, 1]
     with pytest.raises(sdk.CancelledError):
         c.ping()
+
+
+def test_from_env_kv_settings() -> None:
+    cfg = sdk.OpenBaoConfig.from_env(
+        {
+            "GROW_OPENBAO_KV_MOUNT": "kv1",
+            "GROW_OPENBAO_KV_VERSION": "1",
+            "GROW_OPENBAO_SECRETS_PATH": "/apps/web/",
+        }
+    )
+    assert (cfg.kv_mount, cfg.kv_version, cfg.secrets_path, cfg.value_field) == (
+        "kv1",
+        1,
+        "apps/web",
+        "value",
+    )
+    assert sdk.OpenBaoConfig.from_env({"GROW_OPENBAO_KV_VERSION": "0"}).kv_version is None
+    assert sdk.OpenBaoConfig.from_env({"GROW_OPENBAO_KV_MOUNT": "y"}, kv_mount="x").kv_mount == "x"
+    with pytest.raises(sdk.ConfigError, match="GROW_OPENBAO_KV_VERSION"):
+        sdk.OpenBaoConfig.from_env({"GROW_OPENBAO_KV_VERSION": "3"})
+    with pytest.raises(sdk.ConfigError):
+        sdk.OpenBaoConfig(value_field=" ").validate()
+    with pytest.raises(sdk.ConfigError):
+        sdk.OpenBaoConfig(secrets_path=1).validate()  # type: ignore[arg-type]
+    with sdk.OpenBaoClient(sdk.OpenBaoConfig(url=BASE, secrets_path="base", value_field="v")) as c:
+        p = c.secrets()
+        assert (p.path, p.value_field) == ("base", "v")
+        assert c.secrets(path="other").path == "other"
 
 
 def test_from_env_and_vendor_variables(monkeypatch: pytest.MonkeyPatch) -> None:

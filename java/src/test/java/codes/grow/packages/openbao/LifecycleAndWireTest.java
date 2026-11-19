@@ -85,10 +85,10 @@ class LifecycleAndWireTest {
 
       enqueue(server, "health.sealed", 200);
       enqueue(server, "health.active");
-      HealthResponse h = OpenBaoTesting.waitUntilActive(client, Duration.ofSeconds(5));
+      HealthResponse h = OpenBaoTesting.waitForActive(client, Duration.ofSeconds(5));
       assertThat(h.state()).isEqualTo("active");
       server.fallback(ex -> MockServer.send(ex, 200, "{\"initialized\":false}"));
-      assertThatThrownBy(() -> OpenBaoTesting.waitUntilActive(client, Duration.ofMillis(300)))
+      assertThatThrownBy(() -> OpenBaoTesting.waitForActive(client, Duration.ofMillis(300)))
           .isInstanceOf(TimeoutException.class);
     }
     try (MockServer server = MockServer.start();
@@ -103,10 +103,22 @@ class LifecycleAndWireTest {
   void errorMapping() {
     OpenBaoException plain = new ValidationException("x");
     assertThat(VaultHttp.map(plain, true)).isSameAs(plain);
-    OpenBaoException e403 =
+    // plain "permission denied" body (missing/invalid/revoked token) -> AUTHENTICATION
+    OpenBaoException plain403 =
         OpenBaoException.of(
             ErrorCode.PERMISSION_DENIED,
             "op: permission denied (HTTP 403)",
+            403,
+            "rid",
+            null,
+            null);
+    assertThat(VaultHttp.map(plain403, false)).isInstanceOf(AuthenticationException.class);
+    assertThat(VaultHttp.map(plain403, false).requestId()).contains("rid");
+    // policy denial (wrapped multierror) stays PERMISSION_DENIED except on login endpoints
+    OpenBaoException e403 =
+        OpenBaoException.of(
+            ErrorCode.PERMISSION_DENIED,
+            "op: permission denied: 1 error occurred: * permission denied (HTTP 403)",
             403,
             "rid",
             null,

@@ -77,7 +77,7 @@ pub type OnRenewError = Arc<dyn Fn(&Error) + Send + Sync>;
 /// Callback run once when the token expires for good.
 pub type OnExpire = Arc<dyn Fn() + Send + Sync>;
 
-/// Options of [`Auth::start_token_renewer`].
+/// Options of [`Auth::start_renewer`].
 #[derive(Clone, Default)]
 pub struct TokenRenewerOptions {
     /// TTL requested on every renewal (`None` = the token default).

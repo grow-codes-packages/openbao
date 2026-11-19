@@ -1,21 +1,5 @@
-//! Server lifecycle helpers for tests and bootstrap scripts (feature `testing`): `init`,
-//! `unseal`, `seal` and `wait_for_active`.
-//!
-//! ```no_run
-//! # async fn demo() -> grow_openbao::Result<()> {
-//! use grow_openbao::operator::{self, InitOptions};
-//! use grow_openbao::{OpenBaoClient, OpenBaoConfig};
-//!
-//! let client = OpenBaoClient::new(OpenBaoConfig::builder().url("http://openbao:8200").build()?)?;
-//! if !operator::init_status(&client).await? {
-//!     let init = operator::init(&client, &InitOptions::default()).await?;
-//!     operator::unseal(&client, init.keys[0].expose_secret()).await?;
-//!     client.set_token(Some(init.root_token.clone()));
-//! }
-//! operator::wait_for_active(&client, std::time::Duration::from_secs(30)).await?;
-//! # Ok(())
-//! # }
-//! ```
+//! Server lifecycle helpers for tests and bootstrap scripts (feature `testing`), re-exported
+//! from `grow_openbao::testing`: `init`, `unseal`, `seal` and `wait_for_active`.
 
 use std::time::Duration;
 
@@ -23,8 +7,8 @@ use serde_json::{json, Value};
 
 use crate::api::{self, ApiRequest};
 use crate::client::OpenBaoClient;
-use crate::core::{poll_until, Error, HealthStatus, PollOptions, Result, Secret};
-use crate::sys::SealStatus;
+use crate::core::{poll_until, Error, PollOptions, Result, Secret};
+use crate::sys::{HealthResponse, SealStatus};
 
 /// Options of [`init`]. With `recovery_shares` or `recovery_threshold` set (auto-unseal or
 /// static seals), recovery shares are sent instead of secret shares.
@@ -149,16 +133,16 @@ pub async fn seal(client: &OpenBaoClient) -> Result<()> {
     Ok(())
 }
 
-/// Polls `health()` every 250 ms until the node is active (initialised, unsealed and
+/// Polls `sys().health()` every 250 ms until the node is active (initialised, unsealed and
 /// leader); `TIMEOUT` when it does not become active within `timeout`.
-pub async fn wait_for_active(client: &OpenBaoClient, timeout: Duration) -> Result<HealthStatus> {
+pub async fn wait_for_active(client: &OpenBaoClient, timeout: Duration) -> Result<HealthResponse> {
     let opts = PollOptions {
         timeout,
         interval: Duration::from_millis(250),
     };
     poll_until("testing.waitForActive", opts, || async {
-        let h = client.health().await?;
-        Ok(h.healthy.then_some(h))
+        let h = client.sys().health().await?;
+        Ok((h.state == "active").then_some(h))
     })
     .await
 }

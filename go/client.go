@@ -120,8 +120,8 @@ func (c *Client) Sys() *Sys { c.modules(); return c.sys }
 // Wrapping returns the response-wrapping module.
 func (c *Client) Wrapping() *Wrapping { c.modules(); return c.wrapping }
 
-// LeaseManager returns the client's lease manager (renew, revoke, auto-renew).
-func (c *Client) LeaseManager() *LeaseManager { c.modules(); return c.leases }
+// Leases returns the client's lease manager (renew, revoke, auto-renew).
+func (c *Client) Leases() *LeaseManager { c.modules(); return c.leases }
 
 // Secrets returns the SecretsProvider over Config.KVMount / Config.SecretsPath.
 // Close of the client stops its watchers.
@@ -149,8 +149,10 @@ func (c *Client) onClose(fn func()) {
 
 // Health checks the server without credentials (GET sys/health). It never
 // fails for a sealed, standby, uninitialised or unreachable server: Status is
-// "active", "standby", "perfstandby", "sealed", "uninitialized", "unhealthy"
-// or "unreachable", and Healthy is true only for an active node (HTTP 200).
+// "active", "standby", "perfstandby", "sealed", "uninitialized" or
+// "unreachable" (any transport or unexpected HTTP error), and Healthy is true
+// only for an active node. Details holds "version", "initialized", "sealed",
+// "standby" and "clusterName" (when set); on errors "error" (and "httpStatus").
 // It fails only for CANCELLED and CONFIG.
 func (c *Client) Health(ctx context.Context) (HealthStatus, error) {
 	hs, err := c.transport.checkHealth(ctx, "health", &request{
@@ -160,22 +162,39 @@ func (c *Client) Health(ctx context.Context) (HealthStatus, error) {
 		return hs, err
 	}
 	d := hs.Details
+	status := ""
 	switch {
 	case d["initialized"] == "false":
-		hs.Status = "uninitialized"
+		status = "uninitialized"
 	case d["sealed"] == "true":
-		hs.Status = "sealed"
+		status = "sealed"
 	case d["performance_standby"] == "true":
-		hs.Status = "perfstandby"
+		status = "perfstandby"
 	case d["standby"] == "true":
-		hs.Status = "standby"
-	case d["httpStatus"] == "200":
-		hs.Status = "active"
-	default:
-		hs.Status = "unhealthy"
+		status = "standby"
+	case d["initialized"] == "true":
+		status = "active"
 	}
-	hs.Healthy = d["httpStatus"] == "200"
-	return hs, nil
+	switch d["httpStatus"] {
+	case "200", "429", "472", "473", "501", "503":
+	default:
+		status = "" // not a sys/health node state
+	}
+	if status == "" {
+		return HealthStatus{Status: "unreachable", Details: map[string]string{
+			"error": "health: unexpected sys/health response (HTTP " + d["httpStatus"] + ")", "httpStatus": d["httpStatus"],
+		}}, nil
+	}
+	out := HealthStatus{Healthy: status == "active", Status: status, Details: map[string]string{
+		"version": d["version"], "initialized": d["initialized"], "sealed": d["sealed"], "standby": d["standby"],
+	}}
+	if out.Details["standby"] == "" {
+		out.Details["standby"] = "false"
+	}
+	if d["cluster_name"] != "" {
+		out.Details["clusterName"] = d["cluster_name"]
+	}
+	return out, nil
 }
 
 // Ping makes an authenticated round trip (GET auth/token/lookup-self) and
@@ -338,7 +357,8 @@ func (c *Client) statusError(op string, res *response) error {
 	return mapError(StatusError(op, res.Status, res.RequestID, vendorErrorText(res), c.transport.knownSecrets()))
 }
 
-// mapError applies the OpenBao-specific status refinements on top of SPEC §2.1:
+// mapError applies the OpenBao-specific status refinements on top of SPEC §2.1
+// (login endpoints additionally map 400/401/403 to AUTHENTICATION, see loginError):
 //
 //   - 403 with the plain "permission denied" body (missing, invalid, expired or
 //     revoked token) or a message naming an invalid/missing token is
@@ -377,5 +397,8 @@ func isAuthFailure(msg string) bool {
 			return true
 		}
 	}
-	return strings.HasSuffix(msg, "forbidden: permission denied (http 403)") && !strings.Contains(msg, "error occurred")
+	// The plain body (or no error text at all) means a missing/invalid/revoked
+	// token; a policy denial uses the wrapped "1 error occurred" form.
+	return (strings.HasSuffix(msg, "forbidden: permission denied (http 403)") || strings.HasSuffix(msg, ": forbidden (http 403)")) &&
+		!strings.Contains(msg, "error occurred")
 }

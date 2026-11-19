@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use grow_openbao as sdk;
 use grow_openbao_integration::{anonymous_client, root_client, run_id, test_env, test_env_opt};
-use sdk::operator::{self, InitOptions};
+use sdk::testing::{self, InitOptions};
 use sdk::secrets::{
     DeleteOptions, EnvSource, GetOptions, LoadEnvOptions, SecretsProvider, SetOptions, WatchOptions,
 };
@@ -43,7 +43,8 @@ async fn sys_status_calls() {
     let c = root_client();
     let sys = c.sys();
     let h = sys.health().await.unwrap();
-    assert!(h.healthy);
+    assert_eq!(h.state, "active");
+    assert_eq!(h.version, test_env("SERVER_VERSION"));
     assert_eq!(sys.version().await.unwrap(), test_env("SERVER_VERSION"));
     let seal = sys.seal_status().await.unwrap();
     assert!(seal.initialized && !seal.sealed);
@@ -511,7 +512,7 @@ async fn database_and_leases_round_trip() {
     assert!(lease.renewable && lease.username.is_some() && lease.password.is_some());
     assert_eq!(lease.duration, Duration::from_secs(3600));
 
-    let lm = c.lease_manager();
+    let lm = c.leases();
     let info = lm
         .renew(&lease.id, Some(Duration::from_secs(600)))
         .await
@@ -678,7 +679,7 @@ async fn auth_methods_round_trip() {
         ))
         .await
         .unwrap_err();
-    assert_eq!(bad.code(), ErrorCode::Validation);
+    assert_eq!(bad.code(), ErrorCode::Authentication);
 
     // Userpass
     let c = anonymous_client();
@@ -695,11 +696,15 @@ async fn auth_methods_round_trip() {
         c.kv_v2().read(&allowed, None).await.unwrap().data["value"],
         "world"
     );
-    assert!(anonymous_client()
-        .auth()
-        .login(UserpassAuth::new(test_env("USERPASS_USER"), "wrong"))
-        .await
-        .is_err());
+    assert_eq!(
+        anonymous_client()
+            .auth()
+            .login(UserpassAuth::new(test_env("USERPASS_USER"), "wrong"))
+            .await
+            .unwrap_err()
+            .code(),
+        ErrorCode::Authentication
+    );
 
     // JWT
     let c = anonymous_client();
@@ -719,6 +724,7 @@ async fn auth_methods_round_trip() {
         .await
         .unwrap_err();
     assert!(expired.message().contains("expired"));
+    assert_eq!(expired.code(), ErrorCode::Authentication);
 
     // Kubernetes: no Kubernetes API behind the fixture → TokenReview fails (request shape only)
     let dir = std::env::temp_dir().join(format!("grow-rs-k8s-{}", run_id()));
@@ -730,10 +736,7 @@ async fn auth_methods_round_trip() {
         .login(KubernetesAuth::new(test_env("K8S_ROLE"), &jwt_path).mount(test_env("K8S_MOUNT")))
         .await
         .unwrap_err();
-    assert!(matches!(
-        err.code(),
-        ErrorCode::Authentication | ErrorCode::PermissionDenied
-    ));
+    assert_eq!(err.code(), ErrorCode::Authentication);
     std::fs::remove_dir_all(&dir).unwrap();
 
     // login_with (custom method building block)
@@ -790,6 +793,15 @@ async fn auth_methods_round_trip() {
         c.ping().await.unwrap_err().code(),
         ErrorCode::Authentication
     );
+    // an ordinary call with the revoked token: plain "permission denied" 403 → AUTHENTICATION
+    assert_eq!(
+        c.kv_v2()
+            .read("sdk/allowed/hello", None)
+            .await
+            .unwrap_err()
+            .code(),
+        ErrorCode::Authentication
+    );
 
     // token renewer on a short token
     let short = root
@@ -807,7 +819,7 @@ async fn auth_methods_round_trip() {
     let r1 = renews.clone();
     let renewer = c
         .auth()
-        .start_token_renewer(TokenRenewerOptions {
+        .start_renewer(TokenRenewerOptions {
             increment: Some(Duration::from_secs(3)),
             on_renew: Some(Arc::new(move |_| {
                 r1.fetch_add(1, Ordering::SeqCst);
@@ -1006,7 +1018,7 @@ async fn operator_init_unseal_seal() {
     )
     .unwrap();
     let before = c.health().await.unwrap();
-    if operator::init_status(&c).await.unwrap() {
+    if testing::init_status(&c).await.unwrap() {
         println!(
             "shamir instance already initialised ({}); skipped",
             before.status
@@ -1014,11 +1026,11 @@ async fn operator_init_unseal_seal() {
         return;
     }
     assert_eq!(before.status, "uninitialized");
-    let init = operator::init(&c, &InitOptions::default()).await.unwrap();
+    let init = testing::init(&c, &InitOptions::default()).await.unwrap();
     assert_eq!(init.keys.len(), 1);
-    assert!(operator::init_status(&c).await.unwrap());
+    assert!(testing::init_status(&c).await.unwrap());
     assert_eq!(
-        operator::init(&c, &InitOptions::default())
+        testing::init(&c, &InitOptions::default())
             .await
             .unwrap_err()
             .code(),
@@ -1026,19 +1038,19 @@ async fn operator_init_unseal_seal() {
     );
     assert_eq!(c.health().await.unwrap().status, "sealed");
     assert_eq!(
-        operator::unseal(&c, "zz").await.unwrap_err().code(),
+        testing::unseal(&c, "zz").await.unwrap_err().code(),
         ErrorCode::Validation
     );
-    let st = operator::unseal(&c, init.keys[0].expose_secret())
+    let st = testing::unseal(&c, init.keys[0].expose_secret())
         .await
         .unwrap();
     assert!(!st.sealed);
-    let h = operator::wait_for_active(&c, Duration::from_secs(30))
+    let h = testing::wait_for_active(&c, Duration::from_secs(30))
         .await
         .unwrap();
-    assert_eq!(h.status, "active");
+    assert_eq!(h.state, "active");
     c.set_token(Some(init.root_token.clone()));
-    operator::seal(&c).await.unwrap();
+    testing::seal(&c).await.unwrap();
     assert!(c.sys().seal_status().await.unwrap().sealed);
-    let _ = operator::unseal_reset(&c).await.unwrap();
+    let _ = testing::unseal_reset(&c).await.unwrap();
 }

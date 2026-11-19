@@ -14,13 +14,13 @@
 //
 //	client.Auth()            logins (TokenAuth, AppRoleAuth, KubernetesAuth, JWTAuth,
 //	                         UserpassAuth), LookupSelf, RenewSelf, RevokeSelf,
-//	                         CreateToken, StartTokenRenewer
+//	                         CreateToken, StartRenewer
 //	client.KV(ctx, mount)    KV engine with auto-detected version (KVv1 / KVv2)
 //	client.Secrets()         SecretsProvider over KV (get/set/list/delete/metadata,
 //	                         typed getters, LoadEnv, Watch; wrap in NewSecretCache)
 //	client.Transit(mount)    encryption as a service
 //	client.Database(mount)   dynamic database credentials (Lease)
-//	client.LeaseManager()    renew / revoke / auto-renew leases with OnExpire
+//	client.Leases()          renew / revoke / auto-renew leases with OnExpire
 //	client.PKI(mount)        issue / sign / revoke certificates
 //	client.Sys()             seal status, leader, policies, mounts, auth methods,
 //	                         AppRole admin

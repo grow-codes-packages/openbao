@@ -326,7 +326,10 @@ public final class OpenBaoClient implements AutoCloseable {
     holder[0] =
         new OpenBaoSecretsProvider(
             kv(options.mount == null ? config.kvMount() : options.mount),
-            options,
+            SecretsOptions.builder()
+                .path(options.path == null ? config.secretsPath() : options.path)
+                .valueField(options.valueField == null ? config.valueField() : options.valueField)
+                .build(),
             () -> unregister(holder[0]));
     register(holder[0]);
     return holder[0];

@@ -158,7 +158,9 @@ class KvTest {
     assertThatThrownBy(() -> kv.read("sdk/denied/hello"))
         .isInstanceOf(PermissionDeniedException.class);
     enqueue(server, "kvV2.read.missing-token");
-    assertThatThrownBy(() -> kv.read("x")).isInstanceOfAny(PermissionDeniedException.class);
+    assertThatThrownBy(() -> kv.read("x")).isInstanceOf(AuthenticationException.class);
+    server.enqueue(403, "{\"errors\":[]}");
+    assertThatThrownBy(() -> kv.read("x")).isInstanceOf(AuthenticationException.class);
     server.enqueue(403, "{\"errors\":[\"invalid token\"]}");
     assertThatThrownBy(() -> kv.read("x")).isInstanceOf(AuthenticationException.class);
     enqueue(server, "kvV2.patch.wrong-content-type");

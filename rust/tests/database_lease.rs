@@ -188,7 +188,7 @@ async fn lease_renew_revoke_lookup() {
     )
     .await;
     let c = client(&server);
-    let m = c.lease_manager();
+    let m = c.leases();
     let id = "database/creds/ro/abc";
     let info = m.renew(id, Some(Duration::from_secs(600))).await.unwrap();
     assert!(info.renewable && !info.capped());
@@ -234,7 +234,7 @@ async fn lease_renew_revoke_lookup() {
         json(200, json!({"lease_duration": 5, "renewable": true})),
     )
     .await;
-    let m = client(&server).lease_manager();
+    let m = client(&server).leases();
     assert_eq!(m.renew("given-id", None).await.unwrap().id, "given-id");
 }
 
@@ -310,7 +310,7 @@ async fn managed_lease_renews_until_capped_then_expires_once() {
     .await;
     let c = client(&server);
     let (renews, errors, expired, opts) = counters();
-    let ml = c.lease_manager().manage(lease("l1", 1, true), opts);
+    let ml = c.leases().manage(lease("l1", 1, true), opts);
     assert_eq!(ml.lease().id, "l1");
     assert!(format!("{ml:?}").contains("l1"));
     assert!(format!("{:?}", ManageOptions::default()).contains("increment"));
@@ -336,7 +336,7 @@ async fn managed_lease_rejected_increment_capped_and_close() {
     .await;
     let c = client(&server);
     let (_r, errors, expired, opts) = counters();
-    let ml = c.lease_manager().manage(lease("l1", 1, true), opts);
+    let ml = c.leases().manage(lease("l1", 1, true), opts);
     tokio::time::timeout(Duration::from_secs(10), ml.done())
         .await
         .unwrap();
@@ -360,7 +360,7 @@ async fn managed_lease_rejected_increment_capped_and_close() {
     let c = client(&server);
     let (renews, _e, expired, mut opts) = counters();
     opts.increment = Some(Duration::from_secs(60));
-    let ml = c.lease_manager().manage(lease("l1", 1, true), opts);
+    let ml = c.leases().manage(lease("l1", 1, true), opts);
     tokio::time::timeout(Duration::from_secs(10), ml.done())
         .await
         .unwrap();
@@ -374,9 +374,7 @@ async fn managed_lease_rejected_increment_capped_and_close() {
 
     // a non-renewable lease just expires; a lease without TTL waits for close
     let (renews, _e, expired, opts) = counters();
-    let ml = c
-        .lease_manager()
-        .manage(lease("l2", 1, false), opts.clone());
+    let ml = c.leases().manage(lease("l2", 1, false), opts.clone());
     tokio::time::timeout(Duration::from_secs(10), ml.done())
         .await
         .unwrap();
@@ -387,10 +385,10 @@ async fn managed_lease_rejected_increment_capped_and_close() {
         ),
         (0, 1)
     );
-    let forever = c.lease_manager().manage(lease("l3", 0, true), opts.clone());
-    let long = c.lease_manager().manage(lease("l4", 3600, true), opts);
+    let forever = c.leases().manage(lease("l3", 0, true), opts.clone());
+    let long = c.leases().manage(lease("l4", 3600, true), opts);
     let stopped = c
-        .lease_manager()
+        .leases()
         .manage(lease("l5", 3600, true), ManageOptions::default());
     stopped.stop();
     tokio::time::timeout(Duration::from_secs(5), stopped.done())
@@ -420,7 +418,7 @@ async fn managed_lease_retryable_error_until_expiry() {
     .await;
     let c = client(&server);
     let (_r, errors, expired, opts) = counters();
-    let ml = c.lease_manager().manage(lease("l1", 1, true), opts);
+    let ml = c.leases().manage(lease("l1", 1, true), opts);
     tokio::time::timeout(Duration::from_secs(10), ml.done())
         .await
         .unwrap();

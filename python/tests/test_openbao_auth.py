@@ -286,7 +286,7 @@ def test_token_renewer_stop_and_background() -> None:
         assert c.auth.active_renewers == 1
     assert c.auth.active_renewers == 0
     r = Router().on("GET", "auth/token/lookup-self", "lookupSelf.revoked")
-    with client(r) as c, pytest.raises(sdk.PermissionDeniedError):
+    with client(r) as c, pytest.raises(sdk.AuthenticationError):
         c.auth.start_renewer()
     assert c.auth.active_renewers == 0
 
@@ -362,6 +362,6 @@ async def test_async_token_renewer_fake_sleep() -> None:
         assert c.token is not None and c.token.reveal() != TOKEN
     r = Router().on("GET", "auth/token/lookup-self", "lookupSelf.revoked")
     async with aclient(r) as c:
-        with pytest.raises(sdk.PermissionDeniedError):
+        with pytest.raises(sdk.AuthenticationError):
             await c.auth.start_renewer()
         assert c.auth.active_renewers == 0

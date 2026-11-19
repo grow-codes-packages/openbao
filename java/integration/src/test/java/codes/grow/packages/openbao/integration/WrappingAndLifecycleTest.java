@@ -63,7 +63,7 @@ class WrappingAndLifecycleTest {
                   c, codes.grow.packages.openbao.core.Secret.of("not-a-valid-key!")));
       SealStatus open = OpenBaoTesting.unseal(c, init.keys().get(0));
       assertFalse(open.sealed());
-      HealthResponse h = OpenBaoTesting.waitUntilActive(c, Duration.ofSeconds(30));
+      HealthResponse h = OpenBaoTesting.waitForActive(c, Duration.ofSeconds(30));
       assertEquals("active", h.state());
       c.setToken(init.rootToken());
       assertTrue(c.ping().toNanos() > 0);
@@ -71,7 +71,7 @@ class WrappingAndLifecycleTest {
       assertTrue(c.sys().sealStatus().sealed());
       OpenBaoTesting.resetUnseal(c);
       OpenBaoTesting.unseal(c, init.keysBase64().get(0));
-      assertEquals("active", OpenBaoTesting.waitUntilActive(c, Duration.ofSeconds(30)).state());
+      assertEquals("active", OpenBaoTesting.waitForActive(c, Duration.ofSeconds(30)).state());
     }
   }
 }

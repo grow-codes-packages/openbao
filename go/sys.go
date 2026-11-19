@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"sort"
 	"time"
 )
@@ -12,8 +13,64 @@ import (
 // ACL policies, secrets engines, auth methods and AppRole administration.
 type Sys struct{ c *Client }
 
-// Health is Client.Health.
-func (s *Sys) Health(ctx context.Context) (HealthStatus, error) { return s.c.Health(ctx) }
+// HealthResponse is the typed sys/health answer of Sys.Health.
+type HealthResponse struct {
+	// State is "active", "standby", "perfstandby", "sealed" or "uninitialized".
+	State              string
+	Initialized        bool
+	Sealed             bool
+	Standby            bool
+	PerformanceStandby bool
+	Version            string
+	ClusterName        string
+	ClusterID          string
+	ServerTime         time.Time
+}
+
+// healthQuery makes sys/health answer 200 in every node state.
+var healthQuery = url.Values{
+	"uninitcode": {"200"}, "sealedcode": {"200"}, "standbycode": {"200"}, "performancestandbycode": {"200"},
+}
+
+// Health returns the raw node state (GET sys/health, no token needed; a
+// sealed, standby or uninitialised node is no error). Client.Health is the
+// never-failing SPEC health check built on the same endpoint.
+func (s *Sys) Health(ctx context.Context) (*HealthResponse, error) {
+	res, err := s.c.send(ctx, apiRequest{method: http.MethodGet, path: "sys/health", query: healthQuery, op: "sys.health", noAuth: true})
+	if err != nil {
+		return nil, err
+	}
+	var d struct {
+		Initialized        bool     `json:"initialized"`
+		Sealed             bool     `json:"sealed"`
+		Standby            bool     `json:"standby"`
+		PerformanceStandby bool     `json:"performance_standby"`
+		Version            string   `json:"version"`
+		ClusterName        string   `json:"cluster_name"`
+		ClusterID          string   `json:"cluster_id"`
+		ServerTime         flexTime `json:"server_time_utc"`
+	}
+	if err := res.decodeJSON("sys.health", &d); err != nil {
+		return nil, err
+	}
+	h := &HealthResponse{
+		Initialized: d.Initialized, Sealed: d.Sealed, Standby: d.Standby, PerformanceStandby: d.PerformanceStandby,
+		Version: d.Version, ClusterName: d.ClusterName, ClusterID: d.ClusterID, ServerTime: d.ServerTime.Time,
+	}
+	switch {
+	case !h.Initialized:
+		h.State = "uninitialized"
+	case h.Sealed:
+		h.State = "sealed"
+	case h.PerformanceStandby:
+		h.State = "perfstandby"
+	case h.Standby:
+		h.State = "standby"
+	default:
+		h.State = "active"
+	}
+	return h, nil
+}
 
 // Version is Client.ServerVersion.
 func (s *Sys) Version(ctx context.Context) (string, error) { return s.c.ServerVersion(ctx) }

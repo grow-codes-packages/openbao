@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	"unicode/utf8"
 )
 
@@ -353,10 +354,10 @@ func (p *kvPrimitives) FetchMetadata(ctx context.Context, name string, opts GetO
 		Tags:      tags,
 		Versions:  len(md.Versions),
 		Extra: map[string]string{
-			"max_versions":         strconv.Itoa(md.MaxVersions),
-			"cas_required":         strconv.FormatBool(md.CASRequired),
-			"delete_version_after": md.DeleteVersionAfter.String(),
-			"oldest_version":       strconv.Itoa(md.OldestVersion),
+			"maxVersions":        strconv.Itoa(md.MaxVersions),
+			"casRequired":        strconv.FormatBool(md.CASRequired),
+			"deleteVersionAfter": strconv.FormatInt(int64(md.DeleteVersionAfter/time.Second), 10) + "s",
+			"oldestVersion":      strconv.Itoa(md.OldestVersion),
 		},
 	}, nil
 }
