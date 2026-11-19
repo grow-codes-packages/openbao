@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/grow-codes-packages/openbao/compare/rust-v0.1.1...rust-v0.1.2) (2026-11-19)
+
+
+### Dependencies
+
+* **rust:** Bump the rust group across 1 directory with 3 updates ([#5](https://github.com/grow-codes-packages/openbao/issues/5)) ([17a031a](https://github.com/grow-codes-packages/openbao/commit/17a031a7aaa6b3964c8e08e8b7125b5622c6bd41))
+
 ## [0.1.1](https://github.com/grow-codes-packages/openbao/compare/rust-v0.1.0...rust-v0.1.1) (2026-11-19)
 
 
