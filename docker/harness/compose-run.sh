@@ -12,11 +12,13 @@
 #               Default comes from $SDK_DOCKER_LOCK. Lock files live in $SDK_DOCKER_LOCK_DIR
 #               (default ${XDG_CACHE_HOME:-~/.cache}/grow-sdk/locks), N = $SDK_DOCKER_LOCKS (4).
 #   -t SECONDS  stop the test run after SECONDS (needs timeout(1)); 0 = no limit (default)
-#   -n          do not rebuild images (default: build, using the layer cache)
+#   -n          do not force a rebuild (only useful with GROW_TEST_IMAGE_TAG set to a kept image)
 #   ARGS        passed to the test container instead of its default command
 #
 # What it does:  docker compose -p <project> --profile <lang> run --rm --build test-<lang>
 # then, whatever happened:  docker compose -p <project> down -v --remove-orphans
+# The test image is tagged with the project name ($GROW_TEST_IMAGE_TAG) and removed afterwards, so
+# parallel runs never share a tag (the build cache keeps rebuilds fast).
 # On failure the logs of every other service (service, bootstrap, ...) are printed.
 # Exit status: the test container's exit status (2 for usage errors, 124 on timeout).
 set -eu
@@ -152,6 +154,8 @@ case $lock in none | "" | 0) ;; *) acquire_lock ;; esac
 
 # --- run ---------------------------------------------------------------------------------
 cleaned=0
+remove_image=0
+GROW_TEST_IMAGE_TAG=${GROW_TEST_IMAGE_TAG:-}
 # shellcheck disable=SC2329 # invoked by the EXIT trap
 cleanup() {
 	[ "$cleaned" -eq 0 ] || return 0
@@ -160,6 +164,11 @@ cleanup() {
 	say "cleaning up project $project"
 	compose -p "$project" --profile "$lang" down -v --remove-orphans --timeout 10 >/dev/null 2>&1 ||
 		say "warning: 'docker compose down' failed for project $project"
+	if [ "$remove_image" -eq 1 ]; then
+		for image in $(compose -p "$project" --profile "$lang" config --images 2>/dev/null | grep -- "-test-$lang:$GROW_TEST_IMAGE_TAG\$" || true); do
+			docker image rm "$image" >/dev/null 2>&1 || true
+		done
+	fi
 }
 child=""
 # shellcheck disable=SC2329 # invoked by the INT/TERM traps
@@ -173,6 +182,12 @@ trap 'on_signal 143' TERM
 
 GROW_TEST_RUN_ID=${GROW_TEST_RUN_ID:-$(random_id)}
 export GROW_TEST_RUN_ID
+remove_image=0
+if [ -z "${GROW_TEST_IMAGE_TAG:-}" ]; then
+	GROW_TEST_IMAGE_TAG=$project
+	remove_image=1
+fi
+export GROW_TEST_IMAGE_TAG
 say "project $project, profile $lang, run id $GROW_TEST_RUN_ID"
 
 if [ "$build" -eq 1 ]; then

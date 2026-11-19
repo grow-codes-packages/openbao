@@ -281,7 +281,9 @@ func (vanishing) PutSecret(context.Context, string, []byte, openbao.SetOptions) 
 	return "", nil
 }
 
-func (vanishing) RemoveSecret(context.Context, string, openbao.DeleteOptions) error { return nil }
+func (vanishing) RemoveSecret(context.Context, string, openbao.DeleteOptions) error {
+	return nil
+}
 
 func (vanishing) FetchMetadata(context.Context, string, openbao.GetOptions) (*openbao.SecretMetadata, error) {
 	return nil, nil

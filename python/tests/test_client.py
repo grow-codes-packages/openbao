@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 import grow_openbao as sdk
-from _support import MockServer, closed_port_url, make_config
+from _support import MockServer, closed_port_url, make_config, spawn_capturing
 from _support import Reply as SReply
 from obao import BASE, NO_CONTENT, TOKEN, Reply, Router, aclient, client, err, ok
 
@@ -359,11 +359,13 @@ async def test_async_health_unreachable() -> None:
 async def test_async_health_cancel(server: MockServer, monkeypatch: pytest.MonkeyPatch) -> None:
     server.enqueue(HEALTH, SReply(200, delay=2.0))
     c = real_aclient(server.url)
-    task = asyncio.ensure_future(c.health())
+    errors: list[BaseException] = []
+    task = spawn_capturing(c.health(), errors)
     await asyncio.sleep(0.1)
     task.cancel()
-    with pytest.raises(sdk.CancelledError):
+    with pytest.raises(asyncio.CancelledError):
         await task
+    assert isinstance(errors[0], sdk.CancelledError)
     await c.aclose()
     monkeypatch.setenv("GROW_OPENBAO_URL", server.url)
     c3 = sdk.AsyncOpenBaoClient()
