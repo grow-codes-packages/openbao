@@ -66,7 +66,7 @@ test("serverVersion, sys.version, sys.health, sealStatus and leader", async () =
     await client.close();
   }
   assert.equal(client.closed, true);
-  await assert.rejects(client.ping(), { code: "CONFIG" });
+  await assert.rejects(client.ping(), { code: "CANCELLED" });
 });
 
 test("setToken and token: switching identities", async () => {
