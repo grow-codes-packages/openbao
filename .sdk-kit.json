@@ -81,7 +81,7 @@
     },
     {
       "path": ".github/workflows/release.yml",
-      "sha256": "9e310f70fb6e5a5a39efbf90c3558b5b09a1082119c9ab824e1684c6bcfdb1bf",
+      "sha256": "292b3f5596f3a52fbdf1eeefe232cf9852e56b7961855c86c626b203b66327f9",
       "generated": true
     },
     {
@@ -91,7 +91,7 @@
     },
     {
       "path": ".release-please-manifest.json",
-      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "sha256": "8bb8eecb8fb9f763e2a20886e5ed9cc77e6c8f2ead86f3ef0291e54d9ae75250",
       "generated": false
     },
     {
@@ -670,7 +670,7 @@
     },
     {
       "path": "java/Makefile",
-      "sha256": "cb0e7b278e7f0dd161179c46686a0b564ad42d9cf6314af571ed306a120fa0f8",
+      "sha256": "940b6d16a7686c56c1beb48710bfa334112f53b7dccc4774e86532f5f29aee60",
       "generated": false
     },
     {
@@ -1100,7 +1100,7 @@
     },
     {
       "path": "python/Makefile",
-      "sha256": "431327605926f385e681859284ffb5e1104a47ae542c2bb238614573f10d3ef1",
+      "sha256": "f16ea0aba2b62d409387d2265338799fab84aaee360e397ce8211f548dcf12b5",
       "generated": false
     },
     {
@@ -1255,7 +1255,7 @@
     },
     {
       "path": "python/src/grow_openbao/_version.py",
-      "sha256": "326553d84c140a43dd807c7e7ffd9a77a0b48f004b8de216cf29e7959ca2ed0e",
+      "sha256": "a77fa54f51fdf50ebdb72c3a3172a1bc4dbc18af2125c9b46a337b7947d33a8e",
       "generated": false
     },
     {
@@ -1655,7 +1655,7 @@
     },
     {
       "path": "typescript/Makefile",
-      "sha256": "e507003fc1b6530864a337cb7f1602643d13fd589c395cdb80acbb555f55b8f3",
+      "sha256": "78b47ce69a9b857c4e4903cfe5fbc3cc5455e2a1004e463715e5360ef1c71f1c",
       "generated": false
     },
     {
