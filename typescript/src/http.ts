@@ -216,7 +216,12 @@ export function requireText(value: string, what: string, operation: string): str
 
 /** Strips leading and trailing slashes. */
 export function trimSlashes(value: string): string {
-  return value.replace(/^\/+|\/+$/g, "");
+  // Linear scan: a /^\/+|\/+$/g regex backtracks polynomially on long runs of "/".
+  let start = 0;
+  let end = value.length;
+  while (start < end && value.charCodeAt(start) === 47) start += 1;
+  while (end > start && value.charCodeAt(end - 1) === 47) end -= 1;
+  return value.slice(start, end);
 }
 
 /** RFC 3986 sub-delims and `:`/`@` are valid in a path segment and stay readable. */

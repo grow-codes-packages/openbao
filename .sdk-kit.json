@@ -1100,7 +1100,7 @@
     },
     {
       "path": "java/src/test/java/codes/grow/packages/openbao/SecretsConnectTest.java",
-      "sha256": "0303b09a8b6e0389eb4fd7c0e56c13062082ffed505da2205223e8c2978fc127",
+      "sha256": "50645bfc0da354f42a1b80347b267e8004a5ca5679bae3a04cdc2cf6be194cc2",
       "generated": false
     },
     {
@@ -1445,7 +1445,7 @@
     },
     {
       "path": "python/tests/test_secrets_connect.py",
-      "sha256": "4a98c3fe1b5c6adfed7cb22ab16c14a36e8739af1cf31936924f0d41056e3441",
+      "sha256": "d7576a43baa214310b11600aea5f0e33a0caf377118d7cb0b5cdea357a044dd5",
       "generated": false
     },
     {
@@ -1660,7 +1660,7 @@
     },
     {
       "path": "rust/src/testing/mod.rs",
-      "sha256": "6415af549805599d28083b6f94d682498ba863a75e2897e727a6601202b02181",
+      "sha256": "1899f2ae56ebb39f72b891df561fdcd708d0e9cc1c63fe5837db3cb251f98bca",
       "generated": true
     },
     {
@@ -1940,7 +1940,7 @@
     },
     {
       "path": "typescript/src/secrets/load-config.ts",
-      "sha256": "1f29674b44dc6166ce2d6318f3b3f4daac5be23b2fc194b84bb5354894735d35",
+      "sha256": "efe1ed57fa0370e9abb04fbfe31cf3598f258f30cdd8350f8b9169168c6b0557",
       "generated": true
     },
     {
@@ -2050,7 +2050,7 @@
     },
     {
       "path": "typescript/test/secrets-connect.test.ts",
-      "sha256": "e793aa7f2a509ba8caf0000d477aa41ff4d9e2c57cfc3f3c38c6c6fcd7865a9c",
+      "sha256": "618e42eaa0a23479b7a9e881bc9af743ed3954de58c4ddd651245aabfd19df20",
       "generated": false
     },
     {
