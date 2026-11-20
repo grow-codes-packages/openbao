@@ -15,7 +15,7 @@ documentation = "https://docs.rs/grow-openbao"
 readme = "README.md"
 keywords = ["grow-codes", "sdk", "openbao", "vault", "secrets"]
 categories = ["api-bindings", "asynchronous"]
-include = ["src/**/*.rs", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
+include = ["src/**/*.rs", "Cargo.toml", "README.md", "AGENTS.md", "LICENSE", "NOTICE"]
 
 [lib]
 name = "grow_openbao"
