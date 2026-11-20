@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/grow-codes-packages/openbao/compare/python-v0.1.2...python-v0.2.0) (2026-11-20)
+
+
+### Features
+
+* sync openbao to sdk-kit 0.4.0 (foundation API) ([#18](https://github.com/grow-codes-packages/openbao/issues/18)) ([aa04926](https://github.com/grow-codes-packages/openbao/commit/aa04926be541d24c1108492411c9eb842fec57f6))
+
 ## [0.1.2](https://github.com/grow-codes-packages/openbao/compare/python-v0.1.1...python-v0.1.2) (2026-11-19)
 
 
